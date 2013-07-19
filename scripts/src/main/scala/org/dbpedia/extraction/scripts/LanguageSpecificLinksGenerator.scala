@@ -67,6 +67,37 @@ object LanguageSpecificLinksGenerator {
   }
 
 
+  /**
+   * util function to add paddings to all lines to make them of same length
+   * @param fileIn
+   * @param fileOut
+   */
+  private def padFile (fileIn :String , fileOut:String)
+  {
+    val baseDir = new File(fileIn)
+
+    //finding maximum length of line in the triples file
+    var maxLength=0
+
+    for(ln <-Source.fromFile(baseDir).getLines)
+    {
+      if(ln.length > maxLength) maxLength = ln.length
+    }
+
+    CreateFile(fileOut)
+
+    //adding paddings
+    for(ln <-Source.fromFile(baseDir).getLines)
+    {
+      val newline = ln+" "*(maxLength-ln.length)
+      LogToFile(fileOut,newline)
+    }
+
+    CloseWriters()
+  }
+
+
+
 
   def main(args: Array[String]) {
     //todo : add some requires here to check for arguments
@@ -78,7 +109,7 @@ object LanguageSpecificLinksGenerator {
       * -----------
       *extracting language links related properties from the WikiData RDF Dumb File
       * and save them in a separated languagelinks.nt file
-       */
+      */
     if(option == "0")
     {
       val baseDir = new File(args(1))
@@ -97,18 +128,21 @@ object LanguageSpecificLinksGenerator {
 
           if(Regx.findFirstIn(ln) != None ){
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
-            LogToFile("./languagelinks.nt",triple(2)+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+triple(0)+" .")
+            LogToFile("./languagelinks.ttl",triple(2)+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+triple(0)+" .")
           }
 
         }
 
       }
 
-      CloseWriters()
+      padFile("./languagelinks.ttl","./languagelinks_Padded.ttl")
+
+
     }
 
+
     /**
-     * option 1:
+     * option 2:
      * ---------
      * from the extracted languagelinks.nt file
      * extracting language links and save them in languagelinks folder
@@ -142,6 +176,7 @@ object LanguageSpecificLinksGenerator {
 
           //iterate over all triples todo: change to more efficient way
           for(ln <- Source.fromFile(baseDir).getLines){
+
             triple = split(ln);
 
             if(triple.length ==4 ){
@@ -160,6 +195,13 @@ object LanguageSpecificLinksGenerator {
       CloseWriters()
     }
 
+
+    if(option =="test")
+    {
+
+      padFile(args(1),args(1).replace("test","testpadded"))
+
+    }
 
   }
 
