@@ -143,7 +143,7 @@ object LanguageSpecificLinksGenerator {
             for(obj <- triplesObjects)
             {
               //extracting language
-              val langRegx = """<http:\/\/(.*).dbpedia.org\/resource\/.*>""".r
+              val langRegx = """<http:\/\/(.*).dbpedia.*>""".r
               val langRegx(lang) = obj
 
               //creating file for language if not exists
@@ -154,19 +154,15 @@ object LanguageSpecificLinksGenerator {
                 CreateFile(fileName)
               }
 
-              //creating combination string
-              var LLString :String= ""
               //removing itself
               val innerTripleObjects = triplesObjects.diff(List(obj))
 
 
               for(obj2 <- innerTripleObjects)
               {
-                //LLString += obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .\n"
-                LogToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .\n")
+                LogToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
               }
 
-              //LogToFile(fileName,LLString)
             }
 
             //empty the Chunk container
@@ -178,7 +174,7 @@ object LanguageSpecificLinksGenerator {
 
       CloseWriters()
 
-      print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs" )
+      print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs+\n" )
 
 
     }
