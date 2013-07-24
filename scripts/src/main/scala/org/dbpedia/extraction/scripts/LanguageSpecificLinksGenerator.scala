@@ -9,7 +9,6 @@ import sys.process._
 
 /**
  * User: hadyelsahar
- *
  */
 
 
@@ -66,39 +65,6 @@ object LanguageSpecificLinksGenerator {
     }
   }
 
-
-  /**
-   * util function to add paddings to all lines to make them of same length
-   * @param fileIn
-   * @param fileOut
-   */
-  private def padFile (fileIn :String , fileOut:String)
-  {
-    val baseDir = new File(fileIn)
-
-    //finding maximum length of line in the triples file
-    var maxLength=0
-
-    for(ln <-Source.fromFile(baseDir).getLines)
-    {
-      if(ln.length > maxLength) maxLength = ln.length
-    }
-
-    CreateFile(fileOut)
-
-    //adding paddings
-    for(ln <-Source.fromFile(baseDir).getLines)
-    {
-      val newline = ln+" "*(maxLength-ln.length)
-      LogToFile(fileOut,newline)
-    }
-
-    CloseWriters()
-  }
-
-
-
-
   def main(args: Array[String]) {
     //todo : add some requires here to check for arguments
     //arg1 = 0
@@ -135,75 +101,91 @@ object LanguageSpecificLinksGenerator {
 
       }
 
-      padFile("./languagelinks.ttl","./languagelinks_Padded.ttl")
-
+      CloseWriters
 
     }
 
-
     /**
-     * option 2:
+     * option 1:
      * ---------
      * from the extracted languagelinks.nt file
      * extracting language links and save them in languagelinks folder
      */
     if(option == "1")
     {
+      val startTime = System.nanoTime
+
+      //opening master file for language links
       val baseDir = new File(args(1))
       val file = Source.fromFile(baseDir)
 
+      //creating folder for output files
+      new File("./llinkfiles").mkdir()
 
-      for(ln <- file.getLines){
-        var triple = split(ln);
+      var Q = ""
+      var oldQ = ""
+      var triplesObjects = List[String]()
+      val lines = file.getLines
+      for(ln <- lines){
 
-        if(triple.length ==4){
-          val Q1 = triple(0)
-          val Obj1 = triple(2)
+        val triple = split(ln);
 
-          val langRegx = """<http:\/\/(.*).dbpedia.org\/resource\/.*>""".r
-          val langRegx(lang) = triple(2)
+        //gather all objects of triples until the subject changes
+          oldQ = Q
+          Q = triple(0)
+          val tripleObj = triple(2)
 
-          //make folder for ll files
-          new File("./llinkfiles").mkdir()
+        //for each chuck ( the subject changed or if it's the last line ) , make combinations and save to files
 
-          //create languagefile for each language if doesn't exist before
-          val LLFileName = "./llinkfiles/interlanguage_links_same_as_"+lang+".ttl"
-
-          if(!filesWriters.contains(LLFileName))
+          if((oldQ != Q && oldQ != "") || !lines.hasNext)
           {
-            CreateFile(LLFileName)
-          }
+            //println(oldQ)
+            for(obj <- triplesObjects)
+            {
+              //extracting language
+              val langRegx = """<http:\/\/(.*).dbpedia.org\/resource\/.*>""".r
+              val langRegx(lang) = obj
 
-          //iterate over all triples todo: change to more efficient way
-          for(ln <- Source.fromFile(baseDir).getLines){
+              //creating file for language if not exists
+              val fileName = "./llinkfiles/interlanguage_links_same_as_"+lang+".ttl"
 
-            triple = split(ln);
-
-            if(triple.length ==4 ){
-              val Q2= triple(0)
-              val Obj2 = triple(2)
-              val langRegx(innerLang) = triple(2)
-
-              if(lang != innerLang && Q1 == Q2)
+              if(!filesWriters.contains(fileName))
               {
-                LogToFile(LLFileName,Obj1+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+Obj2+" .")
+                CreateFile(fileName)
               }
+
+              //creating combination string
+              var LLString :String= ""
+              //removing itself
+              val innerTripleObjects = triplesObjects.diff(List(obj))
+
+
+              for(obj2 <- innerTripleObjects)
+              {
+                //LLString += obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .\n"
+                LogToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .\n")
+              }
+
+              //LogToFile(fileName,LLString)
             }
+
+            //empty the Chunk container
+            triplesObjects = List[String]()
           }
+
+          triplesObjects = triplesObjects :+ tripleObj
         }
-      }
+
       CloseWriters()
+
+      print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs" )
+
+
     }
 
-
-    if(option =="test")
-    {
-
-      padFile(args(1),args(1).replace("test","testpadded"))
-
-    }
 
   }
+
 
 }
 
