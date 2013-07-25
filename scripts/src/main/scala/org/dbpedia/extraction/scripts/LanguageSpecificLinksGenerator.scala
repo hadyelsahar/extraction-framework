@@ -33,7 +33,7 @@ object LanguageSpecificLinksGenerator {
    * helper function to create files and save them in te filesWriter HashMap
    * @param fileName
    */
-  private def CreateFile(fileName: String)
+  private def createFile(fileName: String)
   {
     val file = new File(fileName)
     file.createNewFile()
@@ -43,10 +43,10 @@ object LanguageSpecificLinksGenerator {
 
   /**
    * helper function to write line by line in a file
-   * @param file name of the file as created by the CreateFile Function and saved in the HashMap
+   * @param file name of the file as created by the createFile Function and saved in the HashMap
    * @param str string to be written in the file
    */
-  private def LogToFile(file: String, str: String)
+  private def logToFile(file: String, str: String)
   {
     val writer = filesWriters(file)
     writer.write(str)
@@ -56,14 +56,11 @@ object LanguageSpecificLinksGenerator {
   /**
    * destructive function to flush and close all opened buffered writers
    */
-  private def CloseWriters ()
+  private def closeWriters ()
   {
-    for(w <- filesWriters)
-    {
-      w._2.flush()
-      w._2.close()
-    }
+    filesWriters.values.foreach(_.close)
   }
+
 
   def main(args: Array[String]) {
     //todo : add some requires here to check for arguments
@@ -81,7 +78,7 @@ object LanguageSpecificLinksGenerator {
       val baseDir = new File(args(1))
       val file = Source.fromFile(baseDir)
 
-      CreateFile("./languagelinks.ttl")
+      createFile("./languagelinks.ttl")
 
       for(ln <- file.getLines){
         val triple = split(ln);
@@ -90,18 +87,18 @@ object LanguageSpecificLinksGenerator {
         if(triple.length ==4){
 
           //languagelinks triples needed are those contain schema:about predicates and wikipediapages subjects which indicated wikipedia page
-          val Regx = """.*\.wikipedia.org\/wiki.*<http:\/\/schema\.org\/about>""".r
+          val regx = """.*\.wikipedia.org\/wiki.*<http:\/\/schema\.org\/about>""".r
 
-          if(Regx.findFirstIn(ln) != None ){
+          if(regx.findFirstIn(ln) != None ){
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
-            LogToFile("./languagelinks.ttl",triple(2)+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+triple(0)+" .")
+            logToFile("./languagelinks.ttl",triple(2)+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+triple(0)+" .")
           }
 
         }
 
       }
 
-      CloseWriters
+      closeWriters
 
     }
 
@@ -151,7 +148,7 @@ object LanguageSpecificLinksGenerator {
 
               if(!filesWriters.contains(fileName))
               {
-                CreateFile(fileName)
+                createFile(fileName)
               }
 
               //removing itself
@@ -160,7 +157,7 @@ object LanguageSpecificLinksGenerator {
 
               for(obj2 <- innerTripleObjects)
               {
-                LogToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
+                logToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
               }
 
             }
@@ -172,7 +169,7 @@ object LanguageSpecificLinksGenerator {
           triplesObjects = triplesObjects :+ tripleObj
         }
 
-      CloseWriters()
+      closeWriters()
 
       print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs+\n" )
 
