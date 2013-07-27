@@ -30,25 +30,24 @@ object LanguageSpecificLinksGenerator {
   }
 
   /**
-   * helper function to create files and save them in te filesWriter HashMap
-   * @param fileName
-   */
-  private def createFile(fileName: String)
-  {
-    val file = new File(fileName)
-    file.createNewFile()
-    val writer = new BufferedWriter(new FileWriter(file))
-    filesWriters += (fileName->writer)
-  }
-
-  /**
    * helper function to write line by line in a file
+   * create file if doesn't exist
    * @param file name of the file as created by the createFile Function and saved in the HashMap
    * @param str string to be written in the file
    */
-  private def logToFile(file: String, str: String)
+  private def logToFile(fileName: String, str: String)
   {
-    val writer = filesWriters(file)
+    if(!filesWriters.contains(fileName))
+    {
+      val file = new File(fileName)
+      val outputStream = new FileOutputStream(file)
+      val outputStreamWriter = new OutputStreamWriter(outputStream)
+      val bufferedWriter:BufferedWriter = new BufferedWriter(outputStreamWriter)
+
+      filesWriters += (fileName->bufferedWriter)
+    }
+
+    val writer = filesWriters(fileName)
     writer.write(str)
     writer.newLine()
   }
@@ -78,16 +77,15 @@ object LanguageSpecificLinksGenerator {
       val baseDir = new File(args(1))
       val file = Source.fromFile(baseDir)
 
-      createFile("./languagelinks.ttl")
+      //languagelinks triples needed are those contain schema:about predicates and wikipediapages subjects which indicated wikipedia page
+      val regx = """.*\.wikipedia.org\/wiki.*<http:\/\/schema\.org\/about>""".r
+
 
       for(ln <- file.getLines){
         val triple = split(ln);
 
         //check if the triple is in the correct .ttl format
         if(triple.length ==4){
-
-          //languagelinks triples needed are those contain schema:about predicates and wikipediapages subjects which indicated wikipedia page
-          val regx = """.*\.wikipedia.org\/wiki.*<http:\/\/schema\.org\/about>""".r
 
           if(regx.findFirstIn(ln) != None ){
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
@@ -123,6 +121,8 @@ object LanguageSpecificLinksGenerator {
       var oldQ = ""
       var triplesObjects = List[String]()
       val lines = file.getLines
+
+      val langRegx = """<http:\/\/(.*).dbpedia.*>""".r
       for(ln <- lines){
 
         val triple = split(ln);
@@ -140,21 +140,16 @@ object LanguageSpecificLinksGenerator {
             for(obj <- triplesObjects)
             {
               //extracting language
-              val langRegx = """<http:\/\/(.*).dbpedia.*>""".r
               val langRegx(lang) = obj
 
-              //creating file for language if not exists
+              //initializing file name
               val fileName = "./llinkfiles/interlanguage_links_same_as_"+lang+".ttl"
-
-              if(!filesWriters.contains(fileName))
-              {
-                createFile(fileName)
-              }
 
               //removing itself
               val innerTripleObjects = triplesObjects.diff(List(obj))
 
 
+              //logtofile funciton includes creating files if not exist
               for(obj2 <- innerTripleObjects)
               {
                 logToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
@@ -173,6 +168,20 @@ object LanguageSpecificLinksGenerator {
 
       print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs+\n" )
 
+
+    }
+
+
+    if(option =="test")
+    {
+      val x = Set("a","b","c","d","e")
+
+      for(i<-x)
+      {
+        logToFile(i+".txt",i)
+      }
+
+      closeWriters()
 
     }
 
