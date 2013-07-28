@@ -1,10 +1,13 @@
-//package org.dbpedia.extraction.scripts
+package org.dbpedia.extraction.scripts
 
 import java.io._
 import scala.collection.immutable.HashMap
 import scala.io.Source
 import scala.io._
 import sys.process._
+import org.dbpedia.util.text.uri._
+
+
 
 
 /**
@@ -89,7 +92,9 @@ object LanguageSpecificLinksGenerator {
 
           if(regx.findFirstIn(ln) != None ){
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
-            logToFile("./languagelinks.ttl",triple(2)+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+triple(0)+" .")
+            val sub = UriDecoder.decode(triple(2))
+            val obj = UriDecoder.decode(triple(0))
+            logToFile("./languagelinks.ttl",sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
           }
 
         }
