@@ -6,7 +6,9 @@ import scala.io.Source
 import scala.io._
 import sys.process._
 import org.dbpedia.util.text.uri._
-
+import org.dbpedia.extraction.util._
+import java.util.zip.{GZIPInputStream, GZIPOutputStream}
+import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream, BZip2CompressorOutputStream}
 
 
 
@@ -16,6 +18,49 @@ import org.dbpedia.util.text.uri._
 
 
 object LanguageSpecificLinksGenerator {
+
+  //Todo: remove and include from org.dbpedia.extraction.util.IOUtils when merging Dump branch to main
+  object IOUtils {
+
+    /**
+     * Map from file suffix (without "." dot) to output stream wrapper
+     */
+    val zippers = Map[String, OutputStream => OutputStream] (
+      "gz" -> { new GZIPOutputStream(_) },
+      "bz2" -> { new BZip2CompressorOutputStream(_) }
+    )
+
+    /**
+     * Map from file suffix (without "." dot) to input stream wrapper
+     */
+    val unzippers = Map[String, InputStream => InputStream] (
+      "gz" -> { new GZIPInputStream(_) },
+      "bz2" -> { new BZip2CompressorInputStream(_, true) }
+    )
+
+    /**
+     * use opener on file, wrap in un/zipper stream if necessary
+     */
+    private def open[T](file: FileLike[_], opener: FileLike[_] => T, wrappers: Map[String, T => T]): T = {
+      val name = file.name
+      val suffix = name.substring(name.lastIndexOf('.') + 1)
+      wrappers.getOrElse(suffix, identity[T] _)(opener(file))
+    }
+
+    /**
+     * open output stream, wrap in zipper stream if file suffix indicates compressed file.
+     */
+    def outputStream(file: FileLike[_]): OutputStream =
+      open(file, _.outputStream(), zippers)
+
+    /**
+     * open input stream, wrap in unzipper stream if file suffix indicates compressed file.
+     */
+    def inputStream(file: FileLike[_]): InputStream =
+      open(file, _.inputStream(), unzippers)
+
+  }
+
 
   /**
    * HashMap to keep track of all opened files BufferedWriters in order to close and flush them
@@ -179,14 +224,17 @@ object LanguageSpecificLinksGenerator {
 
     if(option =="test")
     {
-      val x = Set("a","b","c","d","e")
+      val fileName = new File(args(1))
 
-      for(i<-x)
+      val file = new RichFile(fileName)
+      val in = IOUtils.inputStream(file)
+      val lines = Source.fromInputStream(in,"UTF-8").getLines()
+
+      for(ln <- lines)
       {
-        logToFile(i+".txt",i)
+        println(ln)
       }
 
-      closeWriters()
 
     }
 
