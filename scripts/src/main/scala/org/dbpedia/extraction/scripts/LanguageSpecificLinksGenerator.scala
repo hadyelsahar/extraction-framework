@@ -125,7 +125,6 @@ object LanguageSpecificLinksGenerator {
       */
     if(option == "0")
     {
-
       val inFile = new File(args(1))
       val inRichFile = new RichFile(inFile)
       val in = IOUtils.inputStream(inRichFile)
@@ -148,11 +147,9 @@ object LanguageSpecificLinksGenerator {
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
             val sub = UriDecoder.decode(triple(2))
             val obj = UriDecoder.decode(triple(0))
-           logToFile("./languagelinks.ttl.gz",sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
+            logToFile("./languagelinks.ttl.gz",sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
           }
-
         }
-
       }
 
       closeWriters
@@ -170,7 +167,10 @@ object LanguageSpecificLinksGenerator {
 
       //opening master file for language links
       val inFile = new File(args(1))
-      val file = Source.fromFile(inFile)
+      val inRichFile = new RichFile(inFile)
+      val in = IOUtils.inputStream(inRichFile)
+      val lines = Source.fromInputStream(in,"UTF-8").getLines()
+
 
       //creating folder for output files
       new File("./llinkfiles").mkdir()
@@ -178,7 +178,6 @@ object LanguageSpecificLinksGenerator {
       var Q = ""
       var oldQ = ""
       var triplesObjects = List[String]()
-      val lines = file.getLines
 
       val langRegx = """<http:\/\/(.*).dbpedia.*>""".r
       for(ln <- lines){
