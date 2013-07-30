@@ -6,7 +6,8 @@ import scala.io.Source
 import scala.io._
 import sys.process._
 import org.dbpedia.util.text.uri._
-import org.dbpedia.extraction.util._
+import org.dbpedia.extraction.util.RichFile
+import org.dbpedia.extraction.util.FileLike
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream, BZip2CompressorOutputStream}
 
@@ -111,6 +112,7 @@ object LanguageSpecificLinksGenerator {
 
   def main(args: Array[String]) {
     //todo : add some requires here to check for arguments
+    val startTime = System.nanoTime
     //arg1 = 0
     val option = args(0)
 
@@ -122,8 +124,8 @@ object LanguageSpecificLinksGenerator {
       */
     if(option == "0")
     {
-      val baseDir = new File(args(1))
-      val file = Source.fromFile(baseDir)
+      val inFile = new File(args(1))
+      val file = Source.fromFile(inFile)
 
       //languagelinks triples needed are those contain schema:about predicates and wikipediapages subjects which indicated wikipedia page
       val regx = """.*\.wikipedia.org\/wiki.*<http:\/\/schema\.org\/about>""".r
@@ -158,11 +160,10 @@ object LanguageSpecificLinksGenerator {
      */
     if(option == "1")
     {
-      val startTime = System.nanoTime
 
       //opening master file for language links
-      val baseDir = new File(args(1))
-      val file = Source.fromFile(baseDir)
+      val inFile = new File(args(1))
+      val file = Source.fromFile(inFile)
 
       //creating folder for output files
       new File("./llinkfiles").mkdir()
@@ -193,7 +194,7 @@ object LanguageSpecificLinksGenerator {
               val langRegx(lang) = obj
 
               //initializing file name
-              val fileName = "./llinkfiles/interlanguage_links_same_as_"+lang+".ttl"
+              val outFileName = "./llinkfiles/interlanguage_links_same_as_"+lang+".ttl"
 
               //removing itself
               val innerTripleObjects = triplesObjects.diff(List(obj))
@@ -202,7 +203,7 @@ object LanguageSpecificLinksGenerator {
               //logtofile funciton includes creating files if not exist
               for(obj2 <- innerTripleObjects)
               {
-                logToFile(fileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
+                logToFile(outFileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
               }
 
             }
@@ -215,10 +216,6 @@ object LanguageSpecificLinksGenerator {
         }
 
       closeWriters()
-
-      print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs+\n" )
-
-
     }
 
 
@@ -238,6 +235,8 @@ object LanguageSpecificLinksGenerator {
 
     }
 
+
+    print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs\n" )
 
   }
 
