@@ -21,7 +21,7 @@ import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream
 object LanguageSpecificLinksGenerator {
 
   //Todo: remove and include from org.dbpedia.extraction.util.IOUtils when merging Dump branch to main
-  object IOUtils {
+    object IOUtils {
 
     /**
      * Map from file suffix (without "." dot) to output stream wrapper
@@ -89,7 +89,8 @@ object LanguageSpecificLinksGenerator {
     if(!filesWriters.contains(fileName))
     {
       val file = new File(fileName)
-      val outputStream = new FileOutputStream(file)
+      val richFile = new RichFile(file)
+      val outputStream = IOUtils.outputStream(richFile)
       val outputStreamWriter = new OutputStreamWriter(outputStream)
       val bufferedWriter:BufferedWriter = new BufferedWriter(outputStreamWriter)
 
@@ -124,24 +125,30 @@ object LanguageSpecificLinksGenerator {
       */
     if(option == "0")
     {
+
       val inFile = new File(args(1))
-      val file = Source.fromFile(inFile)
+      val inRichFile = new RichFile(inFile)
+      val in = IOUtils.inputStream(inRichFile)
+      val lines = Source.fromInputStream(in,"UTF-8").getLines()
+
 
       //languagelinks triples needed are those contain schema:about predicates and wikipediapages subjects which indicated wikipedia page
-      val regx = """.*\.wikipedia.org\/wiki.*<http:\/\/schema\.org\/about>""".r
+      val cond1 = "wikipedia.org/wiki"
+      val cond2 = "<http://schema.org/about>"
 
 
-      for(ln <- file.getLines){
+      for(ln <- lines){
         val triple = split(ln);
 
         //check if the triple is in the correct .ttl format
         if(triple.length ==4){
 
-          if(regx.findFirstIn(ln) != None ){
+          if(ln.contains(cond1)&&ln.contains(cond2))
+          {
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
             val sub = UriDecoder.decode(triple(2))
             val obj = UriDecoder.decode(triple(0))
-            logToFile("./languagelinks.ttl",sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
+           logToFile("./languagelinks.ttl.gz",sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
           }
 
         }
@@ -222,7 +229,6 @@ object LanguageSpecificLinksGenerator {
     if(option =="test")
     {
       val fileName = new File(args(1))
-
       val file = new RichFile(fileName)
       val in = IOUtils.inputStream(file)
       val lines = Source.fromInputStream(in,"UTF-8").getLines()
