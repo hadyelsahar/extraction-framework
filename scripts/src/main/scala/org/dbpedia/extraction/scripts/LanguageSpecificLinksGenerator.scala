@@ -137,7 +137,7 @@ object LanguageSpecificLinksGenerator {
       *extracting language links related properties from the WikiData RDF Dumb File
       * and save them in a separated languagelinks.nt file
       */
-    if(option == "0")
+    if(option == "master")
     {
       val outFileName = args(2)
 
@@ -174,7 +174,7 @@ object LanguageSpecificLinksGenerator {
      * from the extracted languagelinks.nt file
      * extracting language links and save them in languagelinks folder
      */
-    if(option == "1")
+    if(option == "specific")
     {
 
       //creating folder for output files
