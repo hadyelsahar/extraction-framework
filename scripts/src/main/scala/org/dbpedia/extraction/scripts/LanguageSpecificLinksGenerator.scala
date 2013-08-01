@@ -2,15 +2,14 @@ package org.dbpedia.extraction.scripts
 
 import java.io._
 import scala.collection.immutable.HashMap
-import scala.io.Source
 import scala.io._
-import sys.process._
 import org.dbpedia.util.text.uri._
-import org.dbpedia.extraction.util.RichFile
-import org.dbpedia.extraction.util.FileLike
+import org.dbpedia.extraction.util.RichFile.wrapFile
+import org.dbpedia.extraction.util.RichReader.wrapReader
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream, BZip2CompressorOutputStream}
-
+import org.dbpedia.extraction.util.FileLike
+import java.nio.charset.Charset
 
 
 /**
@@ -60,15 +59,34 @@ object LanguageSpecificLinksGenerator {
     def inputStream(file: FileLike[_]): InputStream =
       open(file, _.inputStream(), unzippers)
 
-  }
+    /**
+     * open output stream, wrap in zipper stream if file suffix indicates compressed file,
+     * wrap in writer.
+     */
+    def writer(file: FileLike[_], charset: Charset = Codec.UTF8): Writer =
+      new OutputStreamWriter(outputStream(file), charset)
 
+
+    def reader(file: FileLike[_], charset: Charset = Codec.UTF8): Reader =
+      new InputStreamReader(inputStream(file), charset)
+
+    def readLines(file: FileLike[_])(proc: String => Unit): Unit = {
+      val reader = this.reader(file)
+      try {
+        for (line <- reader) {
+          proc(line)
+        }
+      }
+      finally reader.close()
+    }
+
+  }
 
   /**
    * HashMap to keep track of all opened files BufferedWriters in order to close and flush them
    * when needed
    */
   var filesWriters = new HashMap[String,BufferedWriter]()
-
   /**
    * Helper function to split .nt file lines and extract subject , pred , object and the fullstop
    * @param arg triple line
@@ -77,7 +95,6 @@ object LanguageSpecificLinksGenerator {
   private def split(arg: String): Array[String] = {
     arg.split(" ").map(_.trim).filter(_.nonEmpty)
   }
-
   /**
    * helper function to write line by line in a file
    * create file if doesn't exist
@@ -89,9 +106,7 @@ object LanguageSpecificLinksGenerator {
     if(!filesWriters.contains(fileName))
     {
       val file = new File(fileName)
-      val richFile = new RichFile(file)
-      val outputStream = IOUtils.outputStream(richFile)
-      val outputStreamWriter = new OutputStreamWriter(outputStream)
+      val outputStreamWriter = IOUtils.writer(file)
       val bufferedWriter:BufferedWriter = new BufferedWriter(outputStreamWriter)
 
       filesWriters += (fileName->bufferedWriter)
@@ -101,7 +116,6 @@ object LanguageSpecificLinksGenerator {
     writer.write(str)
     writer.newLine()
   }
-
   /**
    * destructive function to flush and close all opened buffered writers
    */
@@ -125,18 +139,16 @@ object LanguageSpecificLinksGenerator {
       */
     if(option == "0")
     {
-      val inFile = new File(args(1))
-      val inRichFile = new RichFile(inFile)
-      val in = IOUtils.inputStream(inRichFile)
-      val lines = Source.fromInputStream(in,"UTF-8").getLines()
-
+      val outFileName = args(2)
 
       //languagelinks triples needed are those contain schema:about predicates and wikipediapages subjects which indicated wikipedia page
       val cond1 = "wikipedia.org/wiki"
       val cond2 = "<http://schema.org/about>"
 
+      val inFile = new File(args(1))
 
-      for(ln <- lines){
+      //iterating over dump files -- readlines accept arg of type File implicitly through RichFile.wrapFile
+      IOUtils.readLines(inFile){ln =>
         val triple = split(ln);
 
         //check if the triple is in the correct .ttl format
@@ -147,7 +159,7 @@ object LanguageSpecificLinksGenerator {
             triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
             val sub = UriDecoder.decode(triple(2))
             val obj = UriDecoder.decode(triple(0))
-            logToFile("./languagelinks.ttl.gz",sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
+            logToFile(outFileName,sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
           }
         }
       }
@@ -165,21 +177,24 @@ object LanguageSpecificLinksGenerator {
     if(option == "1")
     {
 
-      //opening master file for language links
-      val inFile = new File(args(1))
-      val inRichFile = new RichFile(inFile)
-      val in = IOUtils.inputStream(inRichFile)
-      val lines = Source.fromInputStream(in,"UTF-8").getLines()
-
-
       //creating folder for output files
-      new File("./llinkfiles").mkdir()
+      val baseDir = args(2)
+      new File(baseDir).mkdir()
+      //file extension  .ttl  .ttl.gz .ttl.bz2
+      val outFileExtension = args(3)
+
 
       var Q = ""
       var oldQ = ""
       var triplesObjects = List[String]()
 
       val langRegx = """<http:\/\/(.*).dbpedia.*>""".r
+
+      //iterating over LLmasterfile Triples  -- readLines accept arg of type File implicitly through RichFile.wrapFile
+      val inFile = new File(args(1))
+      val inStream= IOUtils.inputStream(inFile)
+      val lines = Source.fromInputStream(inStream).getLines
+
       for(ln <- lines){
 
         val triple = split(ln);
@@ -198,15 +213,11 @@ object LanguageSpecificLinksGenerator {
             {
               //extracting language
               val langRegx(lang) = obj
-
               //initializing file name
-              val outFileName = "./llinkfiles/interlanguage_links_same_as_"+lang+".ttl"
-
+              val outFileName = baseDir+"/interlanguage_links_same_as_"+lang+outFileExtension
               //removing itself
               val innerTripleObjects = triplesObjects.diff(List(obj))
-
-
-              //logtofile funciton includes creating files if not exist
+              //logtofile function includes creating files if not exist
               for(obj2 <- innerTripleObjects)
               {
                 logToFile(outFileName,obj +" <http://www.w3.org/2002/07/owl#sameAs> " +obj2+" .")
@@ -223,23 +234,6 @@ object LanguageSpecificLinksGenerator {
 
       closeWriters()
     }
-
-
-    if(option =="test")
-    {
-      val fileName = new File(args(1))
-      val file = new RichFile(fileName)
-      val in = IOUtils.inputStream(file)
-      val lines = Source.fromInputStream(in,"UTF-8").getLines()
-
-      for(ln <- lines)
-      {
-        println(ln)
-      }
-
-
-    }
-
 
     print("time taken: " + (System.nanoTime - startTime)/1000000000 +" secs\n" )
 
