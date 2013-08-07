@@ -149,27 +149,29 @@ object LanguageSpecificLinksGenerator {
 
       //iterating over dump files -- readlines accept arg of type File implicitly through RichFile.wrapFile
       IOUtils.readLines(inFile){ln =>
-        val triple = split(ln);
+        if (ln != null)
+        {
+          val triple = split(ln);
 
-        //check if the triple is in the correct .ttl format
-        if(triple.length ==4){
+          //check if the triple is in the correct .ttl format
+          if(triple.length ==4){
 
-          if(ln.contains(cond1)&&ln.contains(cond2))
-          {
-            triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
-            val sub = UriDecoder.decode(triple(2))
-            val obj = UriDecoder.decode(triple(0))
-            logToFile(outFileName,sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
+            if(ln.contains(cond1)&&ln.contains(cond2))
+            {
+              triple(0) = triple(0).replace(".wikipedia.org/wiki",".dbpedia.org/resource")
+              val sub = UriDecoder.decode(triple(2))
+              val obj = UriDecoder.decode(triple(0))
+              logToFile(outFileName,sub+" "+"<http://www.w3.org/2002/07/owl#sameAs>"+" "+obj+" .")
+            }
           }
         }
       }
 
       closeWriters
-
     }
 
     /**
-     * option specific:
+     * option: specific:
      * ---------
      * from the extracted languagelinks.nt file
      * extracting language links and save them in languagelinks folder
@@ -192,21 +194,25 @@ object LanguageSpecificLinksGenerator {
 
       //iterating over LLmasterfile Triples  -- readLines accept arg of type File implicitly through RichFile.wrapFile
       val inFile = new File(args(1))
-      val inStream= IOUtils.inputStream(inFile)
-      val lines = Source.fromInputStream(inStream).getLines
 
-      for(ln <- lines){
+      IOUtils.readLines(inFile){ln =>
 
-        val triple = split(ln);
+        //Q and old Q will keep it's state
 
-        //gather all objects of triples until the subject changes
-          oldQ = Q
-          Q = triple(0)
-          val tripleObj = triple(2)
+        var tripleObj = ""
+        if(ln != null)
+        {
+          val triple = split(ln);
 
-        //for each chuck ( the subject changed or if it's the last line ) , make combinations and save to files
+          //gather all objects of triples until the subject changes
+            oldQ = Q
+            Q = triple(0)
+            tripleObj = triple(2)
+        }
 
-          if((oldQ != Q && oldQ != "") || !lines.hasNext)
+        //for each chuck ( the subject changed or if the last line had passed) , make combinations and save to files
+
+          if((oldQ != Q && oldQ != "") || ln == null)
           {
             //println(oldQ)
             for(obj <- triplesObjects)
@@ -229,7 +235,11 @@ object LanguageSpecificLinksGenerator {
             triplesObjects = List[String]()
           }
 
-          triplesObjects = triplesObjects :+ tripleObj
+          if (ln != null)
+          {
+            triplesObjects = triplesObjects :+ tripleObj
+          }
+
         }
 
       closeWriters()
