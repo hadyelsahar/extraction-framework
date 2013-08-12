@@ -11,11 +11,9 @@ import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream
 import org.dbpedia.extraction.util.FileLike
 import java.nio.charset.Charset
 
-
 /**
  * User: hadyelsahar
  */
-
 
 object LanguageSpecificLinksGenerator {
 
@@ -148,6 +146,7 @@ object LanguageSpecificLinksGenerator {
       val inFile = new File(args(1))
 
       //iterating over dump files -- readlines accept arg of type File implicitly through RichFile.wrapFile
+      var lineCounter = 0
       IOUtils.readLines(inFile){ln =>
         if (ln != null)
         {
@@ -165,8 +164,14 @@ object LanguageSpecificLinksGenerator {
             }
           }
         }
+        if ((lineCounter % 100000) == 0)
+        {
+          println("finished reading " + lineCounter + "lines.." )
+        }
+        lineCounter += 1
       }
 
+      println("finished reading " + lineCounter + "lines" )
       closeWriters
     }
 
