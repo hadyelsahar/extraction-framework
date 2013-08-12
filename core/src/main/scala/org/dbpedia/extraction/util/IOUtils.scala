@@ -55,14 +55,14 @@ object IOUtils {
    * open output stream, wrap in zipper stream if file suffix indicates compressed file,
    * wrap in writer.
    */
-  def writer(file: FileLike[_], charset: Charset = Codec.UTF8.charSet): Writer =
+  def writer(file: FileLike[_], charset: Charset = Codec.UTF8): Writer =
     new OutputStreamWriter(outputStream(file), charset)
   
   /**
    * open input stream, wrap in unzipper stream if file suffix indicates compressed file,
    * wrap in reader.
    */
-  def reader(file: FileLike[_], charset: Charset = Codec.UTF8.charSet): Reader =
+  def reader(file: FileLike[_], charset: Charset = Codec.UTF8): Reader =
     new InputStreamReader(inputStream(file), charset)
   
   def readLines(file: FileLike[_])(proc: String => Unit): Unit = {
