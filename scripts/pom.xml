@@ -98,6 +98,25 @@
                             <mainClass>org.dbpedia.extraction.scripts.UnmodifiedFeederCacheGenerator</mainClass>
                             <jvmArgs><jvmArg>-server</jvmArg><jvmArg>-XX:+UseConcMarkSweepGC</jvmArg></jvmArgs>
                         </launcher>
+                        <launcher>
+                            <id>GenerateLLMasterFile</id>
+                            <mainClass>org.dbpedia.extraction.scripts.LanguageSpecificLinksGenerator</mainClass>
+                            <args>
+                                <arg>master</arg>
+                                <arg>/home/hadyelsahar/DBPedia/Datasets/Wikidata1k_2k.nt.gz</arg>
+                                <arg>/home/hadyelsahar/Desktop/masterLLfile.ttl</arg>
+                            </args>
+                        </launcher>
+                        <launcher>
+                            <id>GenerateLLSpecificFiles</id>
+                            <mainClass>org.dbpedia.extraction.scripts.LanguageSpecificLinksGenerator</mainClass>
+                            <args>
+                                <arg>specific</arg>
+                                <arg>/home/hadyelsahar/DBPedia/Development/extraction-framework/masterLLfile.ttl</arg>
+                                <arg>./llfiles</arg>
+                                <arg>.ttl</arg>
+                            </args>
+                        </launcher>
                     </launchers>
                 </configuration>
 
