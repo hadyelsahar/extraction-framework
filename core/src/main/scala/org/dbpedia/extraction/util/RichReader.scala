@@ -17,8 +17,9 @@ class RichReader(reader: BufferedReader) {
   def foreach[U](proc: String => U): Unit = {
     while (true) {
       val line = reader.readLine()
-      if (line == null) return
+
       proc(line)
+      if (line == null) return
     }
   }
 }
