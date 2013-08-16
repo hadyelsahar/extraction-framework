@@ -29,7 +29,7 @@ class JsonWikiParser {
 
   def apply(page : WikiPage) : PageNode =
   {
-    val nodes = collectInterLanguageLinks(page)
+    val nodes = getNodes(page)
     // Return page node
     new PageNode(page.title, page.id, page.revision, page.timestamp, page.contributorID, page.contributorName, false, false, nodes)
   }
@@ -79,4 +79,28 @@ class JsonWikiParser {
 
     nodes
   }
+
+  def getNodes(page: WikiPage) : List[Node] = {
+
+    var nodes = List[Node]()
+    val json = page.source
+
+    val parsedText = parseOpt(json)
+
+    //check that the text is parsed correctly
+    val jsonObjMap = parsedText match {
+      case Some(map) => map
+      case _ => throw new IllegalStateException("Invalid JSON representation!")
+    }
+
+
+    jsonObjMap.foreach {
+      case (key, value) => nodes ::= WikidataInterWikiLinkNode(key, value)
+
+    }
+
+    nodes
+  }
+
+
 }

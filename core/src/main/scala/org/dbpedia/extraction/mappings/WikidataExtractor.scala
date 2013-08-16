@@ -3,7 +3,7 @@ package org.dbpedia.extraction.mappings
 import org.dbpedia.extraction.ontology.Ontology
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
-import org.dbpedia.extraction.wikiparser.{Namespace, PageNode}
+import org.dbpedia.extraction.wikiparser.{Node, Namespace, PageNode}
 import collection.mutable.ArrayBuffer
 
 /**
@@ -36,6 +36,9 @@ class WikidataExtractor(
     // This is the JSON we want to parse.
     // May contain JSON escaped characters like \u042F
     val json = page.toWikiText
+
+    page.children.foreach{node :Node => println(node.toPlainText)}
+
 
     // We now need to parse the json content. This is a sample of what can be found
     // http://pastebin.com/zygpzhJK
