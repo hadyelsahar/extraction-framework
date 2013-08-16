@@ -93,8 +93,13 @@ class JsonWikiParser {
       case _ => throw new IllegalStateException("Invalid JSON representation!")
     }
 
+    val interLinks = (jsonObjMap \ "links") match {
+      case JObject(links) => links
+      case _ => List()
+    }
 
-    jsonObjMap.foreach {
+
+    interLinks.foreach {
       case (key, value) => nodes ::= WikidataInterWikiLinkNode(key, value)
 
     }
