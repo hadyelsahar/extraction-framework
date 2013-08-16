@@ -80,29 +80,29 @@ class JsonWikiParser {
     nodes
   }
 
-  def getNodes(page: WikiPage) : List[Node] = {
-
-    var nodes = List[Node]()
-    val json = page.source
-
-    val parsedText = parseOpt(json)
-
-    //check that the text is parsed correctly
-    val jsonObjMap = parsedText match {
-      case Some(map) => map
-      case _ => throw new IllegalStateException("Invalid JSON representation!")
-    }
-
-    val interLinks = (jsonObjMap \ "links") match {
-      case JObject(links) => links
-      case _ => List()
-    }
-
-
-    interLinks.foreach {n => nodes ::= WikidataInterWikiLinkNode(key, value) }
-
-    nodes
-  }
+//  def getNodes(page: WikiPage) : List[Node] = {
+//
+//    var nodes = List[Node]()
+//    val json = page.source
+//
+//    val parsedText = parseOpt(json)
+//
+//    //check that the text is parsed correctly
+//    val jsonObjMap = parsedText match {
+//      case Some(map) => map
+//      case _ => throw new IllegalStateException("Invalid JSON representation!")
+//    }
+//
+//    val interLinks = (jsonObjMap \ "links") match {
+//      case JObject(links) => links
+//      case _ => List()
+//    }
+//
+//
+//    interLinks.foreach {n => nodes ::= WikidataInterWikiLinkNode(key, value) }
+//
+//    nodes
+//  }
 
 
 }
