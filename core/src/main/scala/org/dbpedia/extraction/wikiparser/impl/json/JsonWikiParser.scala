@@ -1,7 +1,7 @@
 package org.dbpedia.extraction.wikiparser.impl.json
 
 import org.dbpedia.extraction.sources.WikiPage
-import org.dbpedia.extraction.wikiparser.{WikidataInterWikiLinkNode, Node, PageNode, WikiTitle}
+import org.dbpedia.extraction.wikiparser.{WikidataInterWikiLinkNode, Node, PageNode, WikiTitle,SimpleNode}
 import net.liftweb.json.DefaultFormats
 import net.liftweb.json.JsonParser._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
@@ -19,6 +19,7 @@ import net.liftweb.json.JsonAST._
  * Time: 14:22
  * To change this template use File | Settings | File Templates.
  */
+
 object JsonWikiParser {
   private val WikiLanguageRegex = """([^\s]+)wiki""".r
 }
@@ -29,7 +30,7 @@ class JsonWikiParser {
 
   def apply(page : WikiPage) : PageNode =
   {
-    val nodes = collectInterLanguageLinks(page)
+    val nodes = getLanguageLinks(page)
     // Return page node
     new PageNode(page.title, page.id, page.revision, page.timestamp, page.contributorID, page.contributorName, false, false, nodes)
   }
@@ -46,7 +47,7 @@ class JsonWikiParser {
       case _ => throw new IllegalStateException("Invalid JSON representation!")
     }
 
-    val interLinks = (jsonObjMap) match {
+    val interLinks = (jsonObjMap \ "links") match {
       case JObject(links) => links
       case _ => List()
     }
@@ -55,8 +56,8 @@ class JsonWikiParser {
 
     interLinks.foreach { interLink : JField =>
       interLink.name match {
-          case WikiLanguageRegex(lang) =>  interLinksMap += lang -> interLink.value.extract[String]
-          case _ =>
+        case WikiLanguageRegex(lang) =>  interLinksMap += lang -> interLink.value.extract[String]
+        case _ =>
       }
     }
 
@@ -80,29 +81,52 @@ class JsonWikiParser {
     nodes
   }
 
-//  def getNodes(page: WikiPage) : List[Node] = {
-//
-//    var nodes = List[Node]()
-//    val json = page.source
-//
-//    val parsedText = parseOpt(json)
-//
-//    //check that the text is parsed correctly
-//    val jsonObjMap = parsedText match {
-//      case Some(map) => map
-//      case _ => throw new IllegalStateException("Invalid JSON representation!")
-//    }
-//
-//    val interLinks = (jsonObjMap \ "links") match {
-//      case JObject(links) => links
-//      case _ => List()
-//    }
-//
-//
-//    interLinks.foreach {n => nodes ::= WikidataInterWikiLinkNode(key, value) }
-//
-//    nodes
-//  }
+
+  /**
+   *
+    * @param page
+   * @return
+   */
+  def getLanguageLinks(page: WikiPage) : List[Node] = {
+
+    var nodes = List[Node]()
+    val json = page.source
+
+    val parsedText = parseOpt(json)
+
+    val jsonObjMap = parsedText match {
+      case Some(map) => map
+      case _ => throw new IllegalStateException("Invalid JSON representation!")
+    }
+
+    // get all nodes under json key  "links" which will be in the form
+    //   {
+    //    "arwiki": "نيويورك (مدينة)",
+    //    "frwiki": "New York",
+    //    "eowiki": "Novjorko",
+    //    "plwiki": "Nowy Jork"
+    //  }
+    val interLinks = (jsonObjMap \ "links") match {
+      case JObject(links) => links
+      case _ => List()
+    }
+
+
+    val interLinksMap = collection.mutable.Map[String, String]()
+
+    interLinks.foreach { interLink : JField =>
+      interLink.name match {
+        //use regex to remove the convert  arwiki -> ar
+        case WikiLanguageRegex(lang) =>  interLinksMap += lang -> interLink.value.extract[String]
+        case _ =>
+      }
+    }
+
+    nodes::= new SimpleNode(interLinksMap)
+
+    nodes
+  }
 
 
 }
+

@@ -29,6 +29,6 @@ extends Extractor
     val label = page.title.decoded
     
     if(label.isEmpty) Seq.empty
-    else Seq(new Quad(context.language, DBpediaDatasets.Labels, subjectUri, labelProperty, label, page.sourceUri, context.ontology.datatypes("xsd:string")))
+    else Seq(new Quad(context.language, DBpediaDatasets.Labels, subjectUri, labelProperty, "xxxx", page.sourceUri, context.ontology.datatypes("xsd:string")))
   }
 }

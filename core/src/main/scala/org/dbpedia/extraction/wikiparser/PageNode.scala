@@ -14,6 +14,7 @@ import org.dbpedia.extraction.sources.WikiPage
  * @param isDisambiguation True, if this is a Disambiguation page
  * @param children The contents of this page
  */
+
 class PageNode (
   val title: WikiTitle, 
   val id: Long, 

@@ -11,7 +11,7 @@ import java.net.URI
 sealed abstract class LinkNode(children : List[Node], line : Int)
 extends Node(children, line)
 {
-    def toPlainText = children.map(_.toPlainText).mkString
+  def toPlainText = children.map(_.toPlainText).mkString
 }
 
 sealed abstract class WikiLinkNode(destination: WikiTitle, children: List[Node], line: Int, destinationNodes: List[Node]) 

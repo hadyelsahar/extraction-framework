@@ -12,7 +12,6 @@
     <groupId>org.dbpedia.extraction</groupId>
     <artifactId>dump</artifactId>
     <name>DBpedia Dump Extraction</name>
-
     <build>
         <plugins>
             <plugin>
