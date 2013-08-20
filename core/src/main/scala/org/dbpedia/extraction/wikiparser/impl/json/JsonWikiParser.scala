@@ -83,8 +83,9 @@ class JsonWikiParser {
 
 
   /**
-   *
-    * @param page
+   * Main functionality is parsing the WikiData Json page and extract language links related tripleson the form
+   * Subject  <http://www.w3.org/2002/07/owl#sameAs> <dbpedia.org/resource/New_York>
+    *@param page
    * @return
    */
   def getLanguageLinks(page: WikiPage) : List[Node] = {
@@ -112,15 +113,25 @@ class JsonWikiParser {
     }
 
 
-    val interLinksMap = collection.mutable.Map[String, String]()
+    var interLinksMap = collection.mutable.Map[String, List[String]]()
+    var values = List[String]()
 
     interLinks.foreach { interLink : JField =>
       interLink.name match {
         //use regex to remove the convert  arwiki -> ar
-        case WikiLanguageRegex(lang) =>  interLinksMap += lang -> interLink.value.extract[String]
+
+        case WikiLanguageRegex(lang) =>  {
+          var wikiPageName :String = interLink.value.extract[String]
+          val suffix = wikiPageName.replace(" ","_")
+          val prefix = if (lang=="en") "" else lang+"."
+
+          values ::= "http://"+prefix+"dbpedia.org/resource/"+suffix+""
+        }
         case _ =>
       }
     }
+
+    interLinksMap += "http://www.w3.org/2002/07/owl#sameAs" -> values
 
     nodes::= new SimpleNode(interLinksMap)
 
