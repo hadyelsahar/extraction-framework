@@ -19,7 +19,6 @@ import net.liftweb.json.JsonAST._
  * Time: 14:22
  * To change this template use File | Settings | File Templates.
  */
-
 object JsonWikiParser {
   private val WikiLanguageRegex = """([^\s]+)wiki""".r
 }
@@ -30,7 +29,8 @@ class JsonWikiParser {
 
   def apply(page : WikiPage) : PageNode =
   {
-    val nodes = getLanguageLinks(page)
+    var nodes = getLanguageLinks(page)
+    nodes = nodes ::: getLabels(page)
     // Return page node
     new PageNode(page.title, page.id, page.revision, page.timestamp, page.contributorID, page.contributorName, false, false, nodes)
   }
@@ -134,6 +134,76 @@ class JsonWikiParser {
     interLinksMap += "http://www.w3.org/2002/07/owl#sameAs" -> values
 
     nodes::= new SimpleNode(interLinksMap)
+
+    nodes
+  }
+
+
+  /**
+   * Main functionality is parsing the WikiData Json page and extract labels in different languages the form
+   *
+   * <http://www.w3.org/2000/01/rdf-schema#label> "New York City"@en
+   *                                              "New York "@fr
+   *                                              "New York"@co
+   *@param page
+   * @return SimpleObject that contains no UriTriples and it's valueTriples are filled with different labels on the form
+   *         Labelproperty ->
+   *                 lang -> label
+   *
+   *         <http://www.w3.org/2000/01/rdf-schema#label>  ->
+   *                                                      "en" -> "New York City"
+   *                                                      "fr" -> "New York"
+   *                                                      "co" -> "New York"
+   */
+  def getLabels(page: WikiPage) : List[Node] = {
+
+    var nodes = List[Node]()
+    val json = page.source
+
+    val parsedText = parseOpt(json)
+
+    val jsonObjMap = parsedText match {
+      case Some(map) => map
+      case _ => throw new IllegalStateException("Invalid JSON representation!")
+    }
+
+
+    // get all nodes under json key  "label" which will be in the form
+    //   {
+    //    "en": "New York City",
+    //    "ar": "مدينة نيو يورك",
+    //    "fr": "New York",
+    //    "it": "New York",
+    //    "pl": "Nowy Jork",
+    //    "de": "New York",
+    //    "nl": "New York",
+    //    "be-tarask": "Нью-Ёрк",
+    //    "nan": "New York Chhī"
+    //  }
+    // Json sample : http://pastebin.com/zygpzhJK
+
+    val interLinks = (jsonObjMap \ "label") match {
+      case JObject(links) => links
+      case _ => List()
+    }
+
+
+    var labelsTriples = collection.mutable.Map[String, collection.mutable.Map[String,String]]()
+    var labelsMap = collection.mutable.Map[String,String]()
+
+    interLinks.foreach { field : JField =>
+
+          val label :String = field.value.extract[String]
+          val lang :String =  field.name
+          labelsMap += lang -> label
+
+    }
+
+
+    labelsTriples += "http://www.w3.org/2000/01/rdf-schema#label" -> labelsMap
+
+
+    nodes::= new SimpleNode(collection.mutable.Map.empty,labelsTriples)
 
     nodes
   }
