@@ -20,7 +20,10 @@ import net.liftweb.json.JsonAST._
  * To change this template use File | Settings | File Templates.
  */
 object JsonWikiParser {
-  private val WikiLanguageRegex = """([^\s]+)wiki""".r
+  /* the regex should search for languageslinks like "enwiki" only
+  so that "enwikivoyage" for example wouldn't be acceptable because they wouldn't match a DBpedia entity
+  */
+  private val WikiLanguageRegex = """([^\s]+)wiki$""".r
 }
 
 class JsonWikiParser {
