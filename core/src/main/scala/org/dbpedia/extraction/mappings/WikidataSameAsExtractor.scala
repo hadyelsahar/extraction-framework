@@ -3,12 +3,14 @@ package org.dbpedia.extraction.mappings
 import org.dbpedia.extraction.ontology.Ontology
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
-import org.dbpedia.extraction.wikiparser.{SimpleNode, WikidataInterWikiLinkNode, Namespace, PageNode}
+import org.dbpedia.extraction.wikiparser.{SimpleNode, PageNode}
 import collection.mutable.ArrayBuffer
 
 /**
- * Extracts data from Wikidata sources.
- * This is a copy of WikiPageExtractor for now with comments
+ * it's an extractor to extract sameas data from DBpedia-WikiData on the form of
+ * <wikidata.dbpedia.org/WQ18>  <owl:sameas> <dbpedia.org/London>
+ * <wikidata.dbpedia.org/WQ18>  <owl:sameas> <fr.dbpedia.org/London>
+ * <wikidata.dbpedia.org/WQ18>  <owl:sameas> <co.dbpedia.org/London>
  */
 class WikidataSameAsExtractor(
                          context : {
@@ -26,7 +28,7 @@ class WikidataSameAsExtractor(
 
 
   // this is where we will store the output
-  override val datasets = Set(DBpediaDatasets.Wikidata)
+  override val datasets = Set(DBpediaDatasets.WikidataSameAs)
 
   override def extract(page : PageNode, subjectUri : String, pageContext : PageContext): Seq[Quad] =
   {
@@ -44,18 +46,14 @@ class WikidataSameAsExtractor(
               case "http://www.w3.org/2002/07/owl#sameAs" => {
 
                 //make combinations for each language and write Quads in the form :
-                // fr.dbpedia:New_york  owl:sameas   en.dbpedia:New_york_City
-                // fr.dbpedia:New_york  owl:sameas   ar.dbpedia:نيويورك
-                // en.dbpedia:New_york_City owl:sameas   ar.dbpedia:نيويورك
-                // en.dbpedia:New_york_City owl:sameas   fr.dbpedia:New_york
+                //<wikidata.dbpedia.org/WQ18>  <owl:sameas> <dbpedia.org/London>
+                //<wikidata.dbpedia.org/WQ18>  <owl:sameas> <fr.dbpedia.org/London>
+                //<wikidata.dbpedia.org/WQ18>  <owl:sameas> <co.dbpedia.org/London>
                 // ..etc
-                //Language links are in the form of URIs so SimpleNode.getUriTriples method is used
+                //links returned from the wikiparser are in the form of URIs so SimpleNode.getUriTriples method is used
                 for( llink <- node.getUriTriples(property))
                 {
-                  for (llink2 <- node.getUriTriples(property) diff List(llink))
-                  {
-                    quads += new Quad(context.language, DBpediaDatasets.Wikidata, llink, property,llink2, page.sourceUri,null)
-                  }
+                    quads += new Quad(context.language, DBpediaDatasets.WikidataSameAs, subjectUri, property,llink, page.sourceUri,null)
                 }
               }
               case _=> //ignore others
