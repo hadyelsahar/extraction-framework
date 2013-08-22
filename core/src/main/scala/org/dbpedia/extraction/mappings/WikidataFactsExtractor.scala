@@ -1,20 +1,21 @@
 package org.dbpedia.extraction.mappings
 
-
 import org.dbpedia.extraction.ontology.Ontology
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
 import org.dbpedia.extraction.wikiparser.{SimpleNode, PageNode}
 import collection.mutable.ArrayBuffer
-import  org.dbpedia.extraction.wikiparser.Namespace
 
 /**
- * Extracts labels triples from Wikidata sources
+ * Extracts Wikidata claims
  * on the form of
- * http://data.dbpedia.org/Q64 rdfs:label "new York"@fr
- * http://data.dbpedia.org/Q64 rdfs:label "new York City"@en
+ * value triples:
+ * <http://wikidata.dbpedia.org/resouce/Q64> <http://www.wikidata.org/entity/P625> "33.3333333 -123.433333333"
+ * URI triples
+ * <http://wikidata.dbpedia.org/resouce/Q64> <http://www.wikidata.org/entity/P625> <wikidata.dbpedia.org/resource/Q223>
+ *
  */
-class WikidataLabelExtractor(
+class WikidataFactsExtractor(
                          context : {
                            def ontology : Ontology
                            def language : Language
@@ -30,7 +31,7 @@ class WikidataLabelExtractor(
 
 
   // this is where we will store the output
-  override val datasets = Set(DBpediaDatasets.WikidataLabels)
+  override val datasets = Set(DBpediaDatasets.WikidataFacts)
 
   override def extract(page : PageNode, subjectUri : String, pageContext : PageContext): Seq[Quad] =
   {
@@ -49,18 +50,25 @@ class WikidataLabelExtractor(
           {
 
             //check for triples that contains sameas properties only ie.(represents language links)
-            property match {
-              case "http://www.w3.org/2000/01/rdf-schema#label" => {
+
+              if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
 
                 //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
-                val labelsMap = node.getValueTriples(property)
-                for( lang <- labelsMap.keys)
+                val valueFacts = node.getValueTriples(property)
+                for( fact <- valueFacts.keys)
                 {
-                    quads += new Quad(Language.apply(lang), DBpediaDatasets.WikidataLabels, subjectUri, labelProperty, labelsMap(lang), page.sourceUri, context.ontology.datatypes("xsd:string"))
+                    quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, null)
                 }
+
+                //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
+                val UriFacts = node.getUriTriples(property)
+                for( fact <- UriFacts)
+                {
+                  quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property,fact , page.sourceUri,null)
+                }
+
+
               }
-              case _=> //ignore others
-            }
           }
         }
 

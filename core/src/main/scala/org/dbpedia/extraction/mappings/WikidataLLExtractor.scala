@@ -26,7 +26,7 @@ class WikidataLLExtractor(
 
 
   // this is where we will store the output
-  override val datasets = Set(DBpediaDatasets.Wikidata)
+  override val datasets = Set(DBpediaDatasets.WikidataLL)
 
   override def extract(page : PageNode, subjectUri : String, pageContext : PageContext): Seq[Quad] =
   {
@@ -54,7 +54,7 @@ class WikidataLLExtractor(
                 {
                   for (llink2 <- node.getUriTriples(property) diff List(llink))
                   {
-                    quads += new Quad(context.language, DBpediaDatasets.Wikidata, llink, property,llink2, page.sourceUri,null)
+                    quads += new Quad(context.language, DBpediaDatasets.WikidataLL, llink, property,llink2, page.sourceUri,null)
                   }
                 }
               }
