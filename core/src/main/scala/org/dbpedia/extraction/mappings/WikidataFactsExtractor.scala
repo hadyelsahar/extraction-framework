@@ -46,30 +46,40 @@ class WikidataFactsExtractor(
       n match {
         case node: SimpleNode => {
 
+          //Generating Quads for ValueTriples
           for (property <- node.getValueTriples.keys)
           {
 
-            //check for triples that contains sameas properties only ie.(represents language links)
-
+            //check for triples that doesn't contain Label or sameas properties only
               if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
 
-                //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
                 val valueFacts = node.getValueTriples(property)
                 for( fact <- valueFacts.keys)
                 {
-                    quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, null)
+                    quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes("xsd:string"))
                 }
-
-                //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
-                val UriFacts = node.getUriTriples(property)
-                for( fact <- UriFacts)
-                {
-                  quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property,fact , page.sourceUri,null)
-                }
-
 
               }
           }
+
+          //Generating Quads for Uri
+          for (property <- node.getUriTriples.keys)
+          {
+            //check for triples that doesn't contain Label or sameas properties only
+            if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
+
+              //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
+              val UriFacts = node.getUriTriples(property)
+              for( fact <- UriFacts)
+              {
+                //println(subjectUri+"\t"+property+"\t"+fact)
+                quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, property,fact , page.sourceUri,null)
+              }
+            }
+          }
+
+
+
         }
 
         case _=>
@@ -80,13 +90,3 @@ class WikidataFactsExtractor(
     quads
   }
 }
-
-
-//case node: WikidataInterWikiLinkNode => {
-//val dst = node.destination
-//if (dst.isInterLanguageLink) {
-//val dstLang = dst.language
-//val srcLang = node.source.language
-//quads += quad(srcLang.resourceUri.append(node.source.decodedWithNamespace), dstLang.resourceUri.append(dst.decodedWithNamespace), node.sourceUri)
-//}
-//}
