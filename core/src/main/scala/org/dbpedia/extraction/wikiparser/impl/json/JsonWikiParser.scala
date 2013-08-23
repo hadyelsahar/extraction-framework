@@ -316,8 +316,18 @@ class JsonWikiParser {
         }
         case "string" =>
         {
-          values += (claim \ "m")(3).extract[String] -> "en"    //no languages used for now , replacement languages next iteration with xsd formats
-          valueTriples +=  property -> values
+          if(isCommonMediaFiles("P"+propID))
+          {
+            val value = "http://commons.wikimedia.org/wiki/File:" + (claim \ "m")(3).extract[String].replace(" ","_")    //no languages used for now , replacement languages next iteration with xsd formats
+            values +=  value -> "en"
+            valueTriples +=  property -> values
+          }
+          else
+          {
+            values += (claim \ "m")(3).extract[String] -> "en"    //no languages used for now , replacement languages next iteration with xsd formats
+            valueTriples +=  property -> values
+          }
+
         }
         case "time" =>
         {
@@ -340,6 +350,15 @@ class JsonWikiParser {
 
     nodes::= new SimpleNode(URITriples,valueTriples)
     nodes
+  }
+
+
+
+  //helper function for checking the type of property , used in getFacts method
+
+  def isCommonMediaFiles(prop:String) :Boolean = {
+    val commonMediaFilesProperties = List("P10","P109","P117","P14","P15","P154","P158","P18","P181","P207","P242","P367","P368","P41","P443","P491","P51","P623","P692","P94")
+    commonMediaFilesProperties.contains(prop)
   }
 
 
