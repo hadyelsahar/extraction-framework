@@ -56,7 +56,12 @@ class WikidataLabelExtractor(
                 val labelsMap = node.getValueTriples(property)
                 for( lang <- labelsMap.keys)
                 {
-                    quads += new Quad(Language.apply(lang), DBpediaDatasets.WikidataLabels, subjectUri, labelProperty, labelsMap(lang), page.sourceUri, context.ontology.datatypes("xsd:string"))
+                  //write triples for languages that included only in the namespace
+                  Language.get(lang) match
+                  {
+                    case Some(l) => quads += new Quad(l, DBpediaDatasets.WikidataLabels, subjectUri, labelProperty, labelsMap(lang), page.sourceUri, context.ontology.datatypes("xsd:string"))
+                    case _=>
+                  }
                 }
               }
               case _=> //ignore others
@@ -73,7 +78,7 @@ class WikidataLabelExtractor(
   }
 }
 
-
+//
 //case node: WikidataInterWikiLinkNode => {
 //val dst = node.destination
 //if (dst.isInterLanguageLink) {
