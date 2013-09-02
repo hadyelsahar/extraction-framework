@@ -36,6 +36,7 @@ class Quad(
   val datatype: String
 ) extends Ordered[Quad]
 {
+  //updated for allowing addition of Wikidata String properties with unknown language
   def this(
     language: Language,
     dataset: Dataset,
@@ -45,7 +46,7 @@ class Quad(
     context: String,
     datatype: Datatype
   ) = this(
-      language.isoCode,
+    if (language == null ) null else language.isoCode,
       dataset.name,
       subject,
       predicate,
@@ -71,6 +72,7 @@ class Quad(
       context,
       findType(datatype, predicate.range)
     )
+
 
   // Validate input
   if (subject == null) throw new NullPointerException("subject")
