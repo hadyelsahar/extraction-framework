@@ -70,7 +70,7 @@ class JsonWikiParser {
     if (! interLinksMap.contains("en")) return nodes
 
     val sourceTitle = WikiTitle.parse(interLinksMap.get("en").get, Language.English)
-    // Do not generate a link to the defaul language itself
+    // Do not generate a link to the default language itself
     interLinksMap -= "en"
 
     interLinksMap.foreach {
@@ -106,13 +106,14 @@ class JsonWikiParser {
       case _ => throw new IllegalStateException("Invalid JSON representation!")
     }
 
-    // get all nodes under json key  "links" which will be in the form
-    //   {
-    //    "arwiki": "نيويورك (مدينة)",
-    //    "frwiki": "New York",
-    //    "eowiki": "Novjorko",
-    //    "plwiki": "Nowy Jork"
-    //  }
+    /** get all nodes under json key  "links" which will be in the form
+     *  {
+     *   "arwiki": "نيويورك (مدينة)",
+     *   "frwiki": "New York",
+     *   "eowiki": "Novjorko",
+     *   "plwiki": "Nowy Jork"
+     *  }
+     */
     val interLinks = (jsonObjMap \ "links") match {
       case JObject(links) => links
       case _ => List()
@@ -272,10 +273,10 @@ class JsonWikiParser {
       * 2- check that it's "rank":1
       * 3- check for the third item in the claim
       *   a- string  > write as it is
-      *   b- time >  take time property of the 4th item "time":"+00000001931-03-03T00:00:00Z"
-      *   c- globe coordinate > change them to DBpedia long and lat  ( need to discuss this )
-      *   [it's stored as strings - can't be changed for now] d- common media > relpace spaces with _ and add "http://commons.wikimedia.org/wiki/File:" to begining of it
-      *   d- wikibase-entityid : get entity id  /numeric-id  and add "http://wikipeida.dbpedia.org/resource/Q" to it
+      *   b- time >  take time property of the 4th item "time":"+00000001931-03-03T00:00:00Z" and it's type would be xsd:datetime
+      *   c- globe coordinate > change them to DBpedia point(lat long)
+      *   d- common media > relpace spaces with _ and add "http://commons.wikimedia.org/wiki/File:" to begining of it and it's datatype is null
+      *   e- wikibase-entityid : get entity id  /numeric-id  and add "http://wikipeida.dbpedia.org/resource/Q" to it
       *
       * 4- depending on the output type decide to add it to the URITriples or ValuesTriples
       *
@@ -314,24 +315,26 @@ class JsonWikiParser {
           Uris ::= "http://wikidata.dbpedia.org/resource/Q"+((claim \ "m")(3) \ "numeric-id").extract[Int]
           URITriples +=  property -> Uris
         }
+
         case "string" =>
         {
           if(isCommonMediaFiles("P"+propID))
           {
-            val value = "http://commons.wikimedia.org/wiki/File:" + (claim \ "m")(3).extract[String].replace(" ","_")    //no languages used for now , replacement languages next iteration with xsd formats
-            values +=  value -> "en"
+            val value = "http://commons.wikimedia.org/wiki/File:" + (claim \ "m")(3).extract[String].replace(" ","_")    // "" empty datatype means no datatype for URIs and URLs
+            values +=  value -> "CommonMediaFile"
             valueTriples +=  property -> values
           }
           else
           {
-            values += (claim \ "m")(3).extract[String] -> "en"    //no languages used for now , replacement languages next iteration with xsd formats
+            values += (claim \ "m")(3).extract[String] -> ""
             valueTriples +=  property -> values
           }
-
         }
+
+
         case "time" =>
         {
-          values += ((claim \ "m")(3)\ "time").extract[String] -> ""    //no languages used for now , replacement languages next iteration with xsd formats
+          values += ((claim \ "m")(3)\ "time").extract[String] -> "xsd:date"
           valueTriples +=  property -> values
         }
         case "globecoordinate" =>
@@ -339,7 +342,7 @@ class JsonWikiParser {
           val lat = ((claim \ "m")(3)\ "latitude").extract[Int]
           val long = ((claim \ "m")(3)\ "longitude").extract[Int]
 
-          values +=  lat +" "+long -> ""    //no languages used for now , replacement languages next iteration with xsd formats
+          values +=  lat +" "+long -> ""
           valueTriples +=  property -> values
         }
         case _=>
@@ -353,9 +356,7 @@ class JsonWikiParser {
   }
 
 
-
   //helper function for checking the type of property , used in getFacts method
-
   def isCommonMediaFiles(prop:String) :Boolean = {
     val commonMediaFilesProperties = List("P10","P109","P117","P14","P15","P154","P158","P18","P181","P207","P242","P367","P368","P41","P443","P491","P51","P623","P692","P94")
     commonMediaFilesProperties.contains(prop)
