@@ -329,14 +329,6 @@ class OntologyReader
             val propertyMap = properties.map( property => (property.name, property) ).toMap
             val typeMap = datatypes.map( datatype => (datatype.name, datatype) ).toMap
 
-//            //change propertyBuilder to ontologyproperty class
-//            var equivalentOntologyPropertiesMap = Map[OntologyProperty,Set[OntologyProperty]]()
-//
-//            equivalentPropertiesBuilderMap.foreach({m=>
-//                  equivalentOntologyPropertiesMap += m._1 -> m._2.flatMap(_.build(classMap, typeMap))
-//            })
-
-            //filling ontology class with properties , classes , sameas properties , sameas classes
             new Ontology( classes.flatMap(_.build(classMap)).map(c => (c.name, c)).toMap,
                           properties.flatMap(_.build(classMap, typeMap)).map(p => (p.name, p)).toMap,
                           datatypes.map(t => (t.name, t)).toMap,

@@ -49,8 +49,8 @@ class WikidataLabelExtractor(
           {
 
             //check for triples that contains sameas properties only ie.(represents language links)
-            property match {
-              case "http://www.w3.org/2000/01/rdf-schema#label" => {
+            node.NodeType match {
+              case SimpleNode.Labels => {
 
                 //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
                 val labelsMap = node.getValueTriples(property)

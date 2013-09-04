@@ -37,54 +37,9 @@ class JsonWikiParser {
     var nodes = getLanguageLinks(page)
     nodes = nodes ::: getLabels(page)
     nodes = nodes ::: getFacts(page)
+
     // Return page node
     new PageNode(page.title, page.id, page.revision, page.timestamp, page.contributorID, page.contributorName, false, false, nodes)
-  }
-
-  def collectInterLanguageLinks(page: WikiPage) : List[Node] = {
-
-    var nodes = List[Node]()
-    val json = page.source
-
-    val parsedText = parseOpt(json)
-
-    val jsonObjMap = parsedText match {
-      case Some(map) => map
-      case _ => throw new IllegalStateException("Invalid JSON representation!")
-    }
-
-    val interLinks = (jsonObjMap \ "links") match {
-      case JObject(links) => links
-      case _ => List()
-    }
-
-    val interLinksMap = collection.mutable.Map[String, String]()
-
-    interLinks.foreach { interLink : JField =>
-      interLink.name match {
-        case WikiLanguageRegex(lang) =>  interLinksMap += lang -> interLink.value.extract[String]
-        case _ =>
-      }
-    }
-
-    if (! interLinksMap.contains("en")) return nodes
-
-    val sourceTitle = WikiTitle.parse(interLinksMap.get("en").get, Language.English)
-    // Do not generate a link to the default language itself
-    interLinksMap -= "en"
-
-    interLinksMap.foreach {
-      case (key, value) =>
-        Language.map.get(key) match {
-          case Some(lang) =>
-            val destinationTitle = WikiTitle.parse(key + ":" + value, lang)
-            nodes ::= WikidataInterWikiLinkNode(sourceTitle, destinationTitle)
-          case _ =>
-        }
-      case _ =>
-    }
-
-    nodes
   }
 
 
@@ -140,15 +95,13 @@ class JsonWikiParser {
 
     interLinksMap += "http://www.w3.org/2002/07/owl#sameAs" -> values
 
-    nodes::= new SimpleNode(interLinksMap)
+    nodes::= new SimpleNode(interLinksMap,null,SimpleNode.LanguageLinks)
 
     nodes
   }
 
-
   /**
    * Main functionality is parsing the WikiData Json page and extract labels in different languages the form
-   *
    * <http://www.w3.org/2000/01/rdf-schema#label> "New York City"@en
    *                                              "New York "@fr
    *                                              "New York"@co
@@ -182,10 +135,6 @@ class JsonWikiParser {
     //    "fr": "New York",
     //    "it": "New York",
     //    "pl": "Nowy Jork",
-    //    "de": "New York",
-    //    "nl": "New York",
-    //    "be-tarask": "Нью-Ёрк",
-    //    "nan": "New York Chhī"
     //  }
     // Json sample : http://pastebin.com/zygpzhJK
 
@@ -206,10 +155,9 @@ class JsonWikiParser {
 
     }
 
-
     labelsTriples += "http://www.w3.org/2000/01/rdf-schema#label" -> labelsMap
 
-    nodes::= new SimpleNode(collection.mutable.Map.empty,labelsTriples)
+    nodes::= new SimpleNode(collection.mutable.Map.empty,labelsTriples,SimpleNode.Labels)
 
     nodes
   }
@@ -221,15 +169,14 @@ class JsonWikiParser {
    * <http://www.w3.org/2000/01/rdf-schema#label> "New York City"@en
    *                                              "New York "@fr
    *                                              "New York"@co
-   *@param page
+   * @param page
    * @return SimpleObject that contains no UriTriples and it's valueTriples are filled with different labels on the form
    *         Labelproperty ->
    *                 lang -> label
    *
    *         <http://www.w3.org/2000/01/rdf-schema#label>  ->
    *                                                      "en" -> "New York City"
-   *                                                      "fr" -> "New York"
-   *                                                      "co" -> "New York"
+   *                                                      "fr" -> "New York"                                                        "co" -> "New York"
    */
   def getFacts(page: WikiPage) : List[Node] = {
 
@@ -245,28 +192,8 @@ class JsonWikiParser {
 
 
     /** get all nodes under json key  "claims" which will be in the form
-     [
-      {
-         "m":[
-            "value",
-            30,
-            "wikibase-entityid",
-            {
-               "entity-type":"item",
-               "numeric-id":49
-            }
-         ],
-         "q":[
-
-         ],
-         "g":"q30$F21480EF-73A9-44B7-922A-CEE9DE3FA3AC",
-         "rank":1,
-         "refs":[
-         ]
-      }]
     *Json sample : http://pastebin.com/9H6s2Nid
     */
-
 
     /** scenario is as following :
       * 1- check that   m has "value" not some value or no value
@@ -279,14 +206,10 @@ class JsonWikiParser {
       *   e- wikibase-entityid : get entity id  /numeric-id  and add "http://wikipeida.dbpedia.org/resource/Q" to it
       *
       * 4- depending on the output type decide to add it to the URITriples or ValuesTriples
-      *
       */
-
-    //println("inside the parser")
 
     var valueTriples = collection.mutable.Map[String, collection.mutable.Map[String,String]]()
     var URITriples = collection.mutable.Map[String, List[String]]()
-
 
 
     //get claims only whose are values and has rank ==1 in List[JObject]
@@ -351,7 +274,8 @@ class JsonWikiParser {
 
     }
 
-    nodes::= new SimpleNode(URITriples,valueTriples)
+    //nodes::= new SimpleNode()
+    nodes::= new SimpleNode(URITriples,valueTriples,SimpleNode.Facts)
     nodes
   }
 

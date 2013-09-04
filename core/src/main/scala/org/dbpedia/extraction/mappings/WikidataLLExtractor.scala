@@ -40,8 +40,8 @@ class WikidataLLExtractor(
           for (property <- node.getUriTriples.keys)
           {
             //check for triples that contains sameas properties only ie.(represents language links)
-            property match {
-              case "http://www.w3.org/2002/07/owl#sameAs" => {
+            node.NodeType match {
+              case  SimpleNode.LanguageLinks => {
 
                 //make combinations for each language and write Quads in the form :
                 // fr.dbpedia:New_york  owl:sameas   en.dbpedia:New_york_City

@@ -51,7 +51,7 @@ class WikidataFactsExtractor(
           {
 
             //check for triples that doesn't contain Label or sameas properties only
-              if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
+              if(node.NodeType == SimpleNode.Facts){
 
                 val valueFacts = node.getValueTriples(property)
                 for( fact <- valueFacts.keys)
@@ -70,7 +70,7 @@ class WikidataFactsExtractor(
           for (property <- node.getUriTriples.keys)
           {
             //check for triples that doesn't contain Label or sameas properties only
-            if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
+            if(node.NodeType == SimpleNode.Facts){
 
               //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
               val UriFacts = node.getUriTriples(property)
