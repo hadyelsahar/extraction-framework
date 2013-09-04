@@ -5,6 +5,7 @@ import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
 import org.dbpedia.extraction.wikiparser.{SimpleNode, PageNode}
 import collection.mutable.ArrayBuffer
+import org.dbpedia.extraction.ontology.io.OntologyReader
 
 /**
  * Extracts Wikidata claims
@@ -49,17 +50,15 @@ class WikidataMappedFactsExtractor(
           //Generating Quads for ValueTriples
           for (property <- node.getValueTriples.keys)
           {
-
             //check for triples that doesn't contain Label or sameas properties only
-              if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
-
-                val valueFacts = node.getValueTriples(property)
-                for( fact <- valueFacts.keys)
-                {
-                    quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes("xsd:string"))
-                }
-
-              }
+//              if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
+//
+//                val valueFacts = node.getValueTriples(property)
+//                for( fact <- valueFacts.keys)
+//                {
+//                    quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes("xsd:string"))
+//                }
+//              }
           }
 
           //Generating Quads for Uri
@@ -72,17 +71,22 @@ class WikidataMappedFactsExtractor(
               val UriFacts = node.getUriTriples(property)
               for( fact <- UriFacts)
               {
-                //println(subjectUri+"\t"+property+"\t"+fact)
-                quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, property,fact , page.sourceUri,null)
+                //print(context.ontology.equivalentPropertiesMap.size)
+
+                context.ontology.equivalentPropertiesMap.foreach({map =>
+                  if (map._1.toString.matches(property))
+                  {
+                    map._2.foreach{mappedProp =>
+                    quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, mappedProp.toString,fact , page.sourceUri,null)
+                    }
+                  }
+                })
               }
             }
           }
-
-
-
         }
 
-        case _=>
+        case _ =>
 
     }
     }
@@ -90,3 +94,5 @@ class WikidataMappedFactsExtractor(
     quads
   }
 }
+
+
