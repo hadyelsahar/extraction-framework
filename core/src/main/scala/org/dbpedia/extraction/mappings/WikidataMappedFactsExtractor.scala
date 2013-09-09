@@ -1,11 +1,13 @@
 package org.dbpedia.extraction.mappings
 
-import org.dbpedia.extraction.ontology.Ontology
+import org.dbpedia.extraction.ontology.{OntologyProperty, Ontology}
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
-import org.dbpedia.extraction.wikiparser.{SimpleNode, PageNode}
+import org.dbpedia.extraction.wikiparser.{SimpleNode, PageNode , TextNode}
 import collection.mutable.ArrayBuffer
 import org.dbpedia.extraction.ontology.io.OntologyReader
+import org.dbpedia.extraction.dataparser.DateTimeParser
+import org.dbpedia.extraction.ontology.datatypes.Datatype
 
 /**
  * Extracts Wikidata claims
@@ -19,6 +21,7 @@ import org.dbpedia.extraction.ontology.io.OntologyReader
 class WikidataMappedFactsExtractor(
                          context : {
                            def ontology : Ontology
+                           def redirects : Redirects // redirects required by DateTimeParser
                            def language : Language
                          }
                          )
@@ -50,37 +53,80 @@ class WikidataMappedFactsExtractor(
           //Generating Quads for ValueTriples
           for (property <- node.getValueTriples.keys)
           {
+            val valueFacts = node.getValueTriples(property)
+            for( fact <- valueFacts.keys)
+            {
             //check for triples that doesn't contain Label or sameas properties only
-//              if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
+              node.NodeType match {
+                case SimpleNode.CoordinatesFacts => {
+                  quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, context.ontology.properties(property) ,fact , page.sourceUri)
+                }
+                case SimpleNode.CommonMediaFacts => {
+                  //map the property to equivalent one //to do make helper function for getting equivalent list of properties
+                  //make also helper function to get properties with it's dataTypes
+                  // take into consideration that dataTypes of properties should be URI not strings
+
+                }
+                case SimpleNode.StringFacts =>{
+                  //lot of parsing has to be done depending on data-type categories
+
+
+                }
+                case SimpleNode.TimeFacts =>{
+
+                  //add new regex to DateTime parser
+                  //parse time
+                  //just write the triple and it will get parsed depending on it's type
+                  getDBpediaSameasProperties(property).foreach{dbProp =>
+
+                    val dateParser = new DateTimeParser(context, dbProp.range.asInstanceOf[Datatype])
+                    dateParser.parse(new TextNode(fact,0)) match {
+                      case Some(date) => quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, dbProp,date.toString, page.sourceUri)
+                      case None =>
+                    }
+
+                  }
+
+
+                }
+
+                case _ =>
+
+              }
+            }
+
+//              if(node.NodeType == SimpleNode.Facts || node.NodeType == SimpleNode.MappedFacts){
+//
 //
 //                val valueFacts = node.getValueTriples(property)
+//
 //                for( fact <- valueFacts.keys)
 //                {
-//                    quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes("xsd:string"))
+//                  //String WikiValues
+//                  if(valueFacts(fact)=="")
+//                    quads += new Quad(null , DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes("xsd:string"))
+//                  //CommonMedia Files WikiValues
+//                  else if (valueFacts(fact) == "CommonMediaFile")
+//                    quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property,fact , page.sourceUri,null)
+//                  else if (valueFacts(fact) == "xsd:date")
+//                    quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes(valueFacts(fact)))
 //                }
 //              }
           }
 
-          //Generating Quads for Uri
+          //Generating Quads for Uri and Replace Wikidata property with DBpedia mapped one
           for (property <- node.getUriTriples.keys)
           {
-            //check for triples that doesn't contain Label or sameas properties only
-            if(property != "http://www.w3.org/2000/01/rdf-schema#label" && property != "http://www.w3.org/2002/07/owl#sameAs" ){
+            //check for triples that doesn't contain Lpropertyabel or sameas properties only
+            if(node.NodeType == SimpleNode.Facts || node.NodeType == SimpleNode.MappedFacts){
 
               //labels are in the form of valuesTriples so SimpleNode.getValueTriples method is used  which returns Map[String,String]
               val UriFacts = node.getUriTriples(property)
               for( fact <- UriFacts)
               {
-                //print(context.ontology.equivalentPropertiesMap.size)
-
-                context.ontology.equivalentPropertiesMap.foreach({map =>
-                  if (map._1.toString.matches(property))
-                  {
-                    map._2.foreach{mappedProp =>
-                    quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, mappedProp.toString,fact , page.sourceUri,null)
-                    }
-                  }
-                })
+                    getDBpediaSameasProperties(property).foreach({mappedProp =>
+                      quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, mappedProp.toString,fact , page.sourceUri,null)
+                    })
               }
             }
           }
@@ -93,6 +139,23 @@ class WikidataMappedFactsExtractor(
 
     quads
   }
+
+
+  def getDBpediaSameasProperties(property:String) : Set[OntologyProperty] =
+  {
+    var properties = Set[OntologyProperty]()
+    context.ontology.equivalentPropertiesMap.foreach({map =>
+      if (map._1.toString.matches(property))
+      {
+        map._2.foreach{mappedProp =>
+          properties += mappedProp
+        }
+      }
+    })
+
+  properties
+  }
+
 }
 
 

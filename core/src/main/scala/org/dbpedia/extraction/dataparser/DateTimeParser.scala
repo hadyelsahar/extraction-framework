@@ -41,6 +41,9 @@ class DateTimeParser ( context : {
     private val prefix = if(strict) """\s*""" else """.*?"""
     private val postfix = if(strict) """\s*""" else ".*"
 
+    //wikidata: Catch Dates of format ISO8601 with 11 digits for year : "+00000001931-03-03T00:00:00Z"
+    private val DateRegexISO = """([+-])(\d{11})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(Z|[+-]\d{2}\:\d{2})""".r
+
     // catch dates like: "8 June 07" or "07 June 45"
     private val DateRegex1 = ("""(?iu)""" + prefix + """([0-9]{1,2})\s*("""+monthRegex+""")\s*([0-9]{2})(?!\d)\s*(?!\s)(?!"""+ eraRegex +""").*""" + postfix).r
 
@@ -225,6 +228,12 @@ class DateTimeParser ( context : {
      */
     private def catchDate(input: String) : Option[Date] =
     {
+        for(DateRegexISO(sign,year,month,day,hour,minute,second,timezone) <- List(input))
+        {
+          // there's no Hour minute second or timezone Date in DBpedia
+          return new Some(new Date(Some(year.toInt), Some(month.toInt), Some(day.toInt), datatype))
+        }
+
         for(DateRegex1(day, month, year) <- List(input))
         {
             // the century (1900 or 2000) depends on the last 2-digit number in the inputstring: >20 -> 1900

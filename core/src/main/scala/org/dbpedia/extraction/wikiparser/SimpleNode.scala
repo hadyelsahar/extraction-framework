@@ -8,11 +8,21 @@ import org.dbpedia.extraction.sources.WikiPage
   */
 object SimpleNode {
   type NodeType = String
-  val Facts = "Facts"
-  val MappedFacts = "MappedFacts"
+
   val LanguageLinks = "LanguageLinks"
   val Labels = "Labels"
+
+  val Facts = "Facts"   //for normal Wikidata dump extractor , data weren't adapted for MappedDBpedia dump
+
+  val MappedFacts = "MappedFacts"
+
+  val CoordinatesFacts = "MappedCoordinates"
+  val TimeFacts = "TimeFacts"
+  val StringFacts = "StringFacts"
+  val CommonMediaFacts = "CommonMediaFacts"
+
   val NotImportant = "NotImportant"
+
 }
 
 
