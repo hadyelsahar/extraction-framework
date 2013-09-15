@@ -8,9 +8,9 @@ import collection.mutable.ArrayBuffer
 
 /**
  * it's an extractor to extract sameas data from DBpedia-WikiData on the form of
- * <wikidata.dbpedia.org/WQ18>  <owl:sameas> <dbpedia.org/London>
- * <wikidata.dbpedia.org/WQ18>  <owl:sameas> <fr.dbpedia.org/London>
- * <wikidata.dbpedia.org/WQ18>  <owl:sameas> <co.dbpedia.org/London>
+ * <http://wikidata.dbpedia.org/resource/Q18>  <owl:sameas> <http://dbpedia.org/resource/London>
+ * <http://wikidata.dbpedia.org/resource/Q18>  <owl:sameas> <http://fr.dbpedia.org/resource/London>
+ * <http://wikidata.dbpedia.org/resource/Q18>  <owl:sameas> <http://co.dbpedia.org/resource/London>
  */
 class WikidataSameAsExtractor(
                          context : {
@@ -46,9 +46,9 @@ class WikidataSameAsExtractor(
               case "http://www.w3.org/2002/07/owl#sameAs" => {
 
                 //make combinations for each language and write Quads in the form :
-                //<wikidata.dbpedia.org/WQ18>  <owl:sameas> <dbpedia.org/London>
-                //<wikidata.dbpedia.org/WQ18>  <owl:sameas> <fr.dbpedia.org/London>
-                //<wikidata.dbpedia.org/WQ18>  <owl:sameas> <co.dbpedia.org/London>
+                //<http://wikidata.dbpedia.org/resource/Q18>  <owl:sameas> <http://dbpedia.org/resource/London>
+                //<http://wikidata.dbpedia.org/resource/Q18>  <owl:sameas> <http://fr.dbpedia.org/resource/London>
+                //<http://wikidata.dbpedia.org/resource/Q18>  <owl:sameas> <http://co.dbpedia.org/resource/London>
                 // ..etc
                 //links returned from the wikiparser are in the form of URIs so SimpleNode.getUriTriples method is used
                 for( llink <- node.getUriTriples(property))

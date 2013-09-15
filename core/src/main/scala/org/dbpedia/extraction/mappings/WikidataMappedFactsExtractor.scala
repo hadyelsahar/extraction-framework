@@ -6,7 +6,7 @@ import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
 import org.dbpedia.extraction.wikiparser.{SimpleNode, PageNode , TextNode}
 import collection.mutable.ArrayBuffer
 import org.dbpedia.extraction.ontology.io.OntologyReader
-import org.dbpedia.extraction.dataparser.DateTimeParser
+import org.dbpedia.extraction.dataparser.{DataParser, DateTimeParser}
 import org.dbpedia.extraction.ontology.datatypes.Datatype
 
 /**
@@ -35,7 +35,7 @@ class WikidataMappedFactsExtractor(
 
 
   // this is where we will store the output
-  override val datasets = Set(DBpediaDatasets.WikidataFacts)
+  override val datasets = Set(DBpediaDatasets.WikidataMappedFacts)
 
   override def extract(page : PageNode, subjectUri : String, pageContext : PageContext): Seq[Quad] =
   {
@@ -59,59 +59,45 @@ class WikidataMappedFactsExtractor(
             //check for triples that doesn't contain Label or sameas properties only
               node.NodeType match {
                 case SimpleNode.CoordinatesFacts => {
-                  quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, context.ontology.properties(property) ,fact , page.sourceUri)
+                  quads += new Quad(null, DBpediaDatasets.WikidataMappedFacts, subjectUri, context.ontology.properties(property) ,fact , page.sourceUri)
                 }
+
                 case SimpleNode.CommonMediaFacts => {
                   //map the property to equivalent one //to do make helper function for getting equivalent list of properties
-                  //make also helper function to get properties with it's dataTypes
                   // take into consideration that dataTypes of properties should be URI not strings
+                  getDBpediaSameasProperties(property).foreach{dbProp =>
 
+                    val fileURI = "http://commons.wikimedia.org/wiki/File:" + fact.replace(" ","_")
+                    quads += new Quad(context.language, DBpediaDatasets.WikidataMappedFacts, subjectUri, dbProp.uri,fileURI , page.sourceUri,null)
+
+                  }
                 }
+
                 case SimpleNode.StringFacts =>{
                   //lot of parsing has to be done depending on data-type categories
+                  getDBpediaSameasProperties(property).foreach{dbProp =>
 
+                    quads += new Quad(null, DBpediaDatasets.WikidataMappedFacts, subjectUri,dbProp ,fact , page.sourceUri)
 
+                  }
                 }
+
                 case SimpleNode.TimeFacts =>{
 
-                  //add new regex to DateTime parser
-                  //parse time
-                  //just write the triple and it will get parsed depending on it's type
                   getDBpediaSameasProperties(property).foreach{dbProp =>
 
                     val dateParser = new DateTimeParser(context, dbProp.range.asInstanceOf[Datatype])
                     dateParser.parse(new TextNode(fact,0)) match {
-                      case Some(date) => quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, dbProp,date.toString, page.sourceUri)
+                      case Some(date) => quads += new Quad(context.language, DBpediaDatasets.WikidataMappedFacts, subjectUri, dbProp,date.toString, page.sourceUri)
                       case None =>
                     }
-
                   }
-
-
                 }
 
                 case _ =>
 
               }
             }
-
-//              if(node.NodeType == SimpleNode.Facts || node.NodeType == SimpleNode.MappedFacts){
-//
-//
-//                val valueFacts = node.getValueTriples(property)
-//
-//                for( fact <- valueFacts.keys)
-//                {
-//                  //String WikiValues
-//                  if(valueFacts(fact)=="")
-//                    quads += new Quad(null , DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes("xsd:string"))
-//                  //CommonMedia Files WikiValues
-//                  else if (valueFacts(fact) == "CommonMediaFile")
-//                    quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property,fact , page.sourceUri,null)
-//                  else if (valueFacts(fact) == "xsd:date")
-//                    quads += new Quad(context.language, DBpediaDatasets.WikidataFacts, subjectUri, property ,fact , page.sourceUri, context.ontology.datatypes(valueFacts(fact)))
-//                }
-//              }
           }
 
           //Generating Quads for Uri and Replace Wikidata property with DBpedia mapped one
@@ -125,7 +111,7 @@ class WikidataMappedFactsExtractor(
               for( fact <- UriFacts)
               {
                     getDBpediaSameasProperties(property).foreach({mappedProp =>
-                      quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataFacts, subjectUri, mappedProp.toString,fact , page.sourceUri,null)
+                      quads += new Quad(Language.apply("en"), DBpediaDatasets.WikidataMappedFacts, subjectUri, mappedProp.toString,fact , page.sourceUri,null)
                     })
               }
             }
@@ -155,6 +141,18 @@ class WikidataMappedFactsExtractor(
 
   properties
   }
+
+  //Mappings Parsers to DBpedia Properties
+  //todo: replace it in the extraction framework
+
+//  def getParserType (datatypeURI :String) : DataParser = {
+//
+//
+//
+//  }
+
+
+
 
 }
 
