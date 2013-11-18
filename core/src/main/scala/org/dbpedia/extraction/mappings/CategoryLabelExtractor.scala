@@ -11,7 +11,7 @@ import org.dbpedia.extraction.util.Language
  */
 class CategoryLabelExtractor( context : {
                                   def ontology : Ontology
-                                  def language : Language } ) extends Extractor
+                                  def language : Language } ) extends Extractor[PageNode]
 {
     private val labelProperty = context.ontology.properties("rdfs:label")
     

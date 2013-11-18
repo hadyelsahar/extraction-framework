@@ -63,7 +63,7 @@ extends ConfigParser(config)
    *
    * @return A Map which contains the extractor classes for each language
    */
-  private def loadExtractorClasses() : Map[Language, List[Class[_ <: Extractor]]] =
+  private def loadExtractorClasses() : Map[Language, List[Class[_ <: Extractor[_]]]] =
   {
     val languages = loadLanguages()
 
@@ -73,7 +73,8 @@ extends ConfigParser(config)
     val stdExtractors = splitValue("extractors", ',').map(loadExtractorClass)
 
     //Create extractor map
-    val classes = new HashMap[Language, List[Class[_ <: Extractor]]]()
+    // type of Extractor would be 'any' because they are different types of extractors and not categorized yet
+    val classes = new HashMap[Language, List[Class[_ <: Extractor[_]]]]()
     
     /*
     TODO: maybe we should check in the first loop if property "extractors."+language.wikiCode
@@ -142,10 +143,10 @@ extends ConfigParser(config)
     SortedSet[Language](languages.toSeq: _*)
   }
 
-  private def loadExtractorClass(name: String): Class[_ <: Extractor] = {
-    val className = if (! name.contains(".")) classOf[Extractor].getPackage.getName+'.'+name else name
+  private def loadExtractorClass(name: String): Class[_ <: Extractor[_]] = {
+    val className = if (! name.contains(".")) classOf[Extractor[_]].getPackage.getName+'.'+name else name
     // TODO: class loader of Extractor.class is probably wrong for some users.
-    classOf[Extractor].getClassLoader.loadClass(className).asSubclass(classOf[Extractor])
+    classOf[Extractor[_]].getClassLoader.loadClass(className).asSubclass(classOf[Extractor[_]])
   }
   
 }

@@ -15,7 +15,7 @@ class PageIdExtractor (
     def language: Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
   private val wikiPageIdProperty = context.ontology.properties("wikiPageID")
 

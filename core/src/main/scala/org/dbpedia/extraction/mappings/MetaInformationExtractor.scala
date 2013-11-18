@@ -17,7 +17,7 @@ import java.net.URI
 
 class MetaInformationExtractor( context : {
   def ontology : Ontology
-  def language : Language } ) extends Extractor
+  def language : Language } ) extends Extractor[PageNode]
 {
   val modificationDatePredicate = context.ontology.properties("wikiPageModified")
   val extractionDatePredicate = context.ontology.properties("wikiPageExtracted")

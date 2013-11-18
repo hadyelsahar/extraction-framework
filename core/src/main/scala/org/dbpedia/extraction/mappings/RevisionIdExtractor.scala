@@ -15,7 +15,7 @@ class RevisionIdExtractor (
     def language: Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
   private val wikiPageRevisionIdProperty = context.ontology.properties("wikiPageRevisionID")
 

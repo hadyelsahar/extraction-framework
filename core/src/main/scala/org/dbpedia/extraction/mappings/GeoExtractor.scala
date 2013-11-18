@@ -17,7 +17,7 @@ class GeoExtractor(
     def language : Language 
   } 
 ) 
-extends Extractor
+extends Extractor[PageNode]
 {
   private val geoCoordinateParser = new GeoCoordinateParser(context)
 

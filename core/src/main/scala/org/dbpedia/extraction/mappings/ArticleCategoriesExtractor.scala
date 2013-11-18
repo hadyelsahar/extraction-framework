@@ -11,7 +11,7 @@ import org.dbpedia.extraction.wikiparser._
  */
 class ArticleCategoriesExtractor( context : {
                                       def ontology : Ontology
-                                      def language : Language } ) extends Extractor
+                                      def language : Language } ) extends Extractor[PageNode]
 {
     private val dctermsSubjectProperty = context.ontology.properties("dct:subject")
 

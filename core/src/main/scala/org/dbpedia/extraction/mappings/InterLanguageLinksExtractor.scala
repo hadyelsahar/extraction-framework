@@ -10,7 +10,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Extracts interwiki links
  */
-class InterLanguageLinksExtractor(context: { def ontology : Ontology; def language : Language }) extends Extractor
+class InterLanguageLinksExtractor(context: { def ontology : Ontology; def language : Language }) extends Extractor[PageNode]
 {
   private val interLanguageLinksProperty = context.ontology.properties("wikiPageInterLanguageLink")
 

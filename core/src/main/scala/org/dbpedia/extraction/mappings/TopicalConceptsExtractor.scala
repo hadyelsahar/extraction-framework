@@ -23,7 +23,7 @@ class TopicalConceptsExtractor(
     def language : Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
     private val skosSubjectProperty = context.ontology.properties("skos:subject")
 

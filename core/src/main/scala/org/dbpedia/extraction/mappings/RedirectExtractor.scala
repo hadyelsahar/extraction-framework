@@ -14,7 +14,7 @@ class RedirectExtractor (
     def language : Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
   private val language = context.language
   

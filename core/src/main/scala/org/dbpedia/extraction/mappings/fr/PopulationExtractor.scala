@@ -18,7 +18,7 @@ class PopulationExtractor(
     	def redirects : Redirects
     }
 )
-extends Extractor {
+extends Extractor[PageNode] {
     private val populationProperty = context.ontology.properties("populationTotal")
     private val populationRegex = """pop=(\d+)""".r
     override val datasets = Set(DBpediaDatasets.FrenchPopulation)

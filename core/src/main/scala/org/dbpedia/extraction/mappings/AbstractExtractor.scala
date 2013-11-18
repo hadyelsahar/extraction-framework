@@ -24,7 +24,7 @@ class AbstractExtractor(
     def language : Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
     private val maxRetries = 3
 

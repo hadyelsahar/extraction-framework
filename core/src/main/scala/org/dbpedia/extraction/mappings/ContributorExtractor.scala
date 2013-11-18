@@ -16,7 +16,7 @@ import java.net.{URLEncoder, URI}
 
 class ContributorExtractor( context : {
   def ontology : Ontology
-  def language : Language } ) extends Extractor
+  def language : Language } ) extends Extractor[PageNode]
 {
 
   override val datasets = Set(DBpediaDatasets.RevisionMeta)

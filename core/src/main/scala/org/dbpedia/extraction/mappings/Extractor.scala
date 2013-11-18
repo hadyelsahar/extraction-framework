@@ -8,4 +8,4 @@ import org.dbpedia.extraction.wikiparser._
  * Necessary to get some type safety in CompositeExtractor: 
  * Class[_ <: Extractor] can be checked at runtime, but Class[_ <: Mapping[PageNode]] can not.
  */
-trait Extractor extends Mapping[PageNode]
+trait Extractor[T] extends Mapping[T]

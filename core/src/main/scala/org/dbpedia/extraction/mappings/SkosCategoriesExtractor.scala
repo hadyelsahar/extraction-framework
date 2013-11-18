@@ -17,7 +17,7 @@ class SkosCategoriesExtractor(
     def language : Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
   private val rdfTypeProperty = context.ontology.properties("rdf:type")
   private val skosConceptClass = context.ontology.classes("skos:Concept")

@@ -20,7 +20,7 @@ class PndExtractor (
     def language : Language
   }
 )
-extends Extractor
+extends Extractor[PageNode]
 {
   private val language = context.language
   
