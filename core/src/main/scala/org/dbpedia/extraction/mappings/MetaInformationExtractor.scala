@@ -19,6 +19,7 @@ class MetaInformationExtractor( context : {
   def ontology : Ontology
   def language : Language } ) extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   val modificationDatePredicate = context.ontology.properties("wikiPageModified")
   val extractionDatePredicate = context.ontology.properties("wikiPageExtracted")
   val editLinkPredicate = context.ontology.properties("wikiPageEditLink")

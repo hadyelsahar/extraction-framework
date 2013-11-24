@@ -18,6 +18,7 @@ class ContributorExtractor( context : {
   def ontology : Ontology
   def language : Language } ) extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
 
   override val datasets = Set(DBpediaDatasets.RevisionMeta)
 

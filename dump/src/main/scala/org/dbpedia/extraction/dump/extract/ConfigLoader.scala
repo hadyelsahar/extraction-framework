@@ -121,7 +121,8 @@ class ConfigLoader(config: Config)
         }
 
         //Extractors
-        val extractor = CompositeExtractor.load[PageNode](extractorClasses, context)
+        //val extractor = CompositeExtractor.load[PageNode](extractorClasses, context)
+        val extractor = CompositeExtractor.loadToParsers(extractorClasses, context)
         val datasets = extractor.datasets
         
         var formats = new ArrayBuffer[Destination]()

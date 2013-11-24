@@ -19,6 +19,8 @@ class GeoExtractor(
 ) 
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
+
   private val geoCoordinateParser = new GeoCoordinateParser(context)
 
   private val typeOntProperty = context.ontology.properties("rdf:type")

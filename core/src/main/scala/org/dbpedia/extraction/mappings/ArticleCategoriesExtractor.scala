@@ -13,6 +13,9 @@ class ArticleCategoriesExtractor( context : {
                                       def ontology : Ontology
                                       def language : Language } ) extends Extractor[PageNode]
 {
+
+    val Type = Extractor.PageNodeType
+
     private val dctermsSubjectProperty = context.ontology.properties("dct:subject")
 
     override val datasets = Set(DBpediaDatasets.ArticleCategories)

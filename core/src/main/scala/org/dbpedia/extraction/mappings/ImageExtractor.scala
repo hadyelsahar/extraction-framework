@@ -31,6 +31,8 @@ class ImageExtractor(
 ) 
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
+
   private val wikiCode = context.language.wikiCode
   private val language = context.language
 

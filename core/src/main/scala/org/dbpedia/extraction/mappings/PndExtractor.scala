@@ -22,6 +22,7 @@ class PndExtractor (
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   private val language = context.language
   
   private val wikiCode = language.wikiCode

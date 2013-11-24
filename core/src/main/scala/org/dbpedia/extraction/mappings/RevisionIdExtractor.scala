@@ -17,6 +17,7 @@ class RevisionIdExtractor (
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   private val wikiPageRevisionIdProperty = context.ontology.properties("wikiPageRevisionID")
 
   override val datasets = Set(DBpediaDatasets.RevisionIds)

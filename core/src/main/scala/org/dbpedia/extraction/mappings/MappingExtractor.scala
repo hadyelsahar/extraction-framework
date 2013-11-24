@@ -16,6 +16,8 @@ class MappingExtractor(
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
+
   private val templateMappings = context.mappings.templateMappings
   private val tableMappings = context.mappings.tableMappings
 

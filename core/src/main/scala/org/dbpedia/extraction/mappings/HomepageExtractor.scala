@@ -19,6 +19,8 @@ class HomepageExtractor(
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
+
   private val language = context.language.wikiCode
 
   private val propertyNames = HomepageExtractorConfig.propertyNamesMap(language)

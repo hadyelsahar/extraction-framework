@@ -19,6 +19,7 @@ class SkosCategoriesExtractor(
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   private val rdfTypeProperty = context.ontology.properties("rdf:type")
   private val skosConceptClass = context.ontology.classes("skos:Concept")
   private val skosPrefLabelProperty = context.ontology.properties("skos:prefLabel")

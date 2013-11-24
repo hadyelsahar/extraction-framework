@@ -18,6 +18,7 @@ class PageLinksExtractor (
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   val wikiPageWikiLinkProperty = context.ontology.properties("wikiPageWikiLink")
 
   override val datasets = Set(DBpediaDatasets.PageLinks)

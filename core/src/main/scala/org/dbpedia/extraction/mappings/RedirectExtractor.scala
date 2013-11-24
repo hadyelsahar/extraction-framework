@@ -16,6 +16,7 @@ class RedirectExtractor (
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   private val language = context.language
   
   private val wikiPageRedirectsProperty = context.ontology.properties("wikiPageRedirects")

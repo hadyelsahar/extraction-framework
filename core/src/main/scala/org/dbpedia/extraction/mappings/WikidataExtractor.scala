@@ -18,6 +18,7 @@ class WikidataExtractor(
                          )
   extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   // Here we define all the ontology predicates we will use
   private val isPrimaryTopicOf = context.ontology.properties("foaf:isPrimaryTopicOf")
   private val primaryTopic = context.ontology.properties("foaf:primaryTopic")

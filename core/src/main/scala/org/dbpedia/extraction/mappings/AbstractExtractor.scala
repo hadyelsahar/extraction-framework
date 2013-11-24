@@ -26,6 +26,7 @@ class AbstractExtractor(
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
     private val maxRetries = 3
 
     private val timeoutMs = 4000

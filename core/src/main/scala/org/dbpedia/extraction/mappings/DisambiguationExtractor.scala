@@ -18,6 +18,9 @@ class DisambiguationExtractor(
 )
 extends Extractor[PageNode]
 {
+
+  val Type = Extractor.PageNodeType
+
   private val language = context.language
 
   private val replaceString = DisambiguationExtractorConfig.disambiguationTitlePartMap(language.wikiCode)

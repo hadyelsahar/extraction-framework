@@ -13,6 +13,9 @@ class CategoryLabelExtractor( context : {
                                   def ontology : Ontology
                                   def language : Language } ) extends Extractor[PageNode]
 {
+
+    val Type = Extractor.PageNodeType
+
     private val labelProperty = context.ontology.properties("rdfs:label")
     
     private val quad = QuadBuilder(context.language, DBpediaDatasets.CategoryLabels, labelProperty, new Datatype("xsd:string")) _

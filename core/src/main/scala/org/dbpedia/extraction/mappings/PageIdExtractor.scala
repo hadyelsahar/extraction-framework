@@ -17,6 +17,7 @@ class PageIdExtractor (
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   private val wikiPageIdProperty = context.ontology.properties("wikiPageID")
 
   override val datasets = Set(DBpediaDatasets.PageIds)

@@ -19,6 +19,7 @@ class PopulationExtractor(
     }
 )
 extends Extractor[PageNode] {
+  val Type = Extractor.PageNodeType
     private val populationProperty = context.ontology.properties("populationTotal")
     private val populationRegex = """pop=(\d+)""".r
     override val datasets = Set(DBpediaDatasets.FrenchPopulation)

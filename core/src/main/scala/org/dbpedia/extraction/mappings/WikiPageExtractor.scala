@@ -17,6 +17,7 @@ class WikiPageExtractor(
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
   // We used foaf:page here, but foaf:isPrimaryTopicOf is probably better.
   private val isPrimaryTopicOf = context.ontology.properties("foaf:isPrimaryTopicOf")
   private val primaryTopic = context.ontology.properties("foaf:primaryTopic")

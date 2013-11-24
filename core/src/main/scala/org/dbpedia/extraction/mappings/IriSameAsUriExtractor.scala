@@ -19,6 +19,8 @@ class IriSameAsUriExtractor (
 )
 extends Extractor[PageNode]
 {
+  val Type = Extractor.PageNodeType
+
   private val language = context.language
 
   val sameAsProperty = context.ontology.properties("owl:sameAs")
