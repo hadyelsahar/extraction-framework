@@ -30,12 +30,14 @@ object CompositeExtractor
       //define different types of Extractors
       var wikiPageExtractors =Seq[Extractor[WikiPage]]()
       var pageNodeExtractors =Seq[Extractor[Any]]()
+      var jsonNodeExtractors =Seq[Extractor[Any]]()
       //to do: add json extractors
 
       extractors foreach { extractor =>
         extractor.Type match {
           case Extractor.WikiPageType =>  wikiPageExtractors  = wikiPageExtractors :+ extractor.asInstanceOf[Extractor[WikiPage]]           //select all extractors which take Wikipage to wrap them in a CompositeExtractor
           case Extractor.PageNodeType =>  pageNodeExtractors  = pageNodeExtractors :+ extractor.asInstanceOf[Extractor[Any]]           //select all extractors which take PageNode to wrap them in WikiParseExtractor
+          case Extractor.JsonNodeType =>  jsonNodeExtractors  = jsonNodeExtractors :+ extractor.asInstanceOf[Extractor[Any]]
           case _ =>
         }
       }
@@ -46,10 +48,10 @@ object CompositeExtractor
       val wikiParseExtractor = new ParseExtractor(WikiPageFormat.WikiText, pageNodeExtractors)
 
       //create and load JsonParseExtractor here
-      //to do:
+      val jsonParseExtractor = new ParseExtractor(WikiPageFormat.Json, jsonNodeExtractors)
 
       //collect ParseExtractors and CompositeExtractor
-      val allExtractors = Seq[Extractor[WikiPage]](wikiParseExtractor) ++ wikiPageExtractors
+      val allExtractors = Seq[Extractor[WikiPage]](wikiParseExtractor,jsonParseExtractor) ++ wikiPageExtractors
 
       new CompositeExtractor[WikiPage](allExtractors)
     }

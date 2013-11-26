@@ -37,7 +37,8 @@ class WikiParserWrapper(wikiTextParserName: String) extends WikiParser {
          } else {
            swebleWikiParser(page)
          }
-       case WikiPageFormat.Json => jsonParser(page)
+     //obslete now because choosing of parser is done from CompositeExtractor Loadtoparser method
+     //case WikiPageFormat.Json => jsonParser(page)
      }
   }
 }

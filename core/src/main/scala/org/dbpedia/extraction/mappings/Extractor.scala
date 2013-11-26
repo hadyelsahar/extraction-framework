@@ -22,6 +22,7 @@ object Extractor extends Enumeration {
   type Type = Value
   val PageNodeType = Value("PageNode")
   val WikiPageType = Value("WikiPage")
+  val JsonNodeType = Value("JsonNode")
   //Any for composite Extractors
   val Any = Value("Any")
 }
