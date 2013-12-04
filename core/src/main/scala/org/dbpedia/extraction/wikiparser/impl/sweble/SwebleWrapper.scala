@@ -5,6 +5,7 @@ import java.net.URI
 import java.util.ArrayList
 
 import scala.collection.JavaConversions._
+import scala.language.implicitConversions
 import collection.mutable.{ListBuffer}
 
 import org.sweble.wikitext.engine.CompiledPage
@@ -144,8 +145,8 @@ final class SwebleWrapper extends WikiParser
                 val name : String = nodeList2string(t.getName) 
                 val nameClean = WikiUtil.cleanSpace(name)
                 val title = new WikiTitle(nameClean, Namespace.Template, language)
-                val tpl = new TemplateNode(title, properties, line, transformNodes(t.getName))
-                List(tpl)
+                val tpl = TemplateNode.transform(new TemplateNode(title, properties, line, transformNodes(t.getName)))
+                tpl
             }
             case tn : Text => List(new TextNode(tn.getContent, line))
             case ws : Whitespace => List(new TextNode(ws.getContent.get(0).asInstanceOf[Text].getContent, line)) //as text

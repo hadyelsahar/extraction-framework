@@ -6,6 +6,7 @@ import org.dbpedia.extraction.ontology.Ontology
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.wikiparser.Namespace
 import org.dbpedia.extraction.destinations.QuadBuilder
+import scala.language.reflectiveCalls
 
 /**
  * Extracts links to flickr wrappr. Scala version of 
@@ -27,7 +28,7 @@ extends Extractor[PageNode]
 
   private val hasPhotoCollectionProperty = language.propertyUri.append("hasPhotoCollection")
   
-  private val flickrWrapprUrlPrefix = "http://www4.wiwiss.fu-berlin.de/flickrwrappr/photos/"
+  private val flickrWrapprUrlPrefix = "http://wifo5-03.informatik.uni-mannheim.de/flickrwrappr/photos/"
   
   override val datasets = Set(DBpediaDatasets.FlickrWrapprLinks)
   

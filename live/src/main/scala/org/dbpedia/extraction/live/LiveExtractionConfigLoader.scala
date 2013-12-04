@@ -1,25 +1,22 @@
 package org.dbpedia.extraction.live.extraction
 
-import xml.XML
-
 import java.net.URL
 import collection.immutable.ListMap
 import java.util.Properties
 import java.io.File
 import org.apache.log4j.Logger
-import java.awt.event.{ActionListener, ActionEvent}
 import org.dbpedia.extraction.mappings._
 import org.dbpedia.extraction.util.Language
-import org.dbpedia.extraction.sources.{WikiSource, Source}
-import org.dbpedia.extraction.wikiparser.{WikiParser, WikiTitle}
+import org.dbpedia.extraction.sources.{WikiSource, Source, XMLSource}
+import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.extraction.destinations._
+import org.dbpedia.extraction.destinations.formatters.UriPolicy
 import org.dbpedia.extraction.live.helper.{ExtractorStatus, LiveConfigReader}
 import org.dbpedia.extraction.live.core.LiveOptions
-import org.dbpedia.extraction.dump.extract.{PolicyParser}
-import org.dbpedia.extraction.wikiparser.Namespace
 import collection.mutable.ArrayBuffer
 import org.dbpedia.extraction.live.storage.JSONCache
 import org.dbpedia.extraction.live.queue.LiveQueueItem
+import scala.xml._
 
 
 /**
@@ -60,11 +57,7 @@ object LiveExtractionConfigLoader
   val commonsSource = null;
 
   val policies = {
-    val prop: Properties = new Properties
-    val policy: String = LiveOptions.options.get("uri-policy.main")
-    prop.setProperty("uri-policy.main", policy)
-    val policyParser = new PolicyParser(prop)
-    policyParser.parsePolicy("uri-policy.main")
+    UriPolicy.parsePolicy(LiveOptions.options.get("uri-policy.main"))
   }
 
   def reload(t : Long) =
@@ -96,7 +89,12 @@ object LiveExtractionConfigLoader
   def extractPage(item: LiveQueueItem, apiURL :String, landCode :String): Boolean =
   {
     val lang = Language.apply(landCode)
-    val articlesSource = WikiSource.fromPageIDs(List(item.getItemID), new URL(apiURL), lang);
+    val articlesSource : Source =
+      if (item.getXML.isEmpty)
+        WikiSource.fromPageIDs(List(item.getItemID), new URL(apiURL), lang)
+      else {
+        XMLSource.fromOAIXML(XML.loadString(item.getXML))
+      }
     startExtraction(articlesSource,lang)
   }
 
@@ -138,9 +136,14 @@ object LiveExtractionConfigLoader
         val liveCache = new JSONCache(cpage.id, cpage.title.decoded)
 
         var destList = new ArrayBuffer[LiveDestination]()  // List of all final destinations
-        // *Delete first* When a triple is deleted from one extractor and added from another extractor
-        destList += new SPARULDestination(false, policies) // delete triples
-        destList += new SPARULDestination(true, policies) // add triples
+        if (liveCache.performCleanUpdate) {
+          destList += new SPARULDelAllDestination(liveCache.cacheObj.subjects, policies)
+          destList += new SPARULAddAllDestination(policies)
+        } else {
+          // *Delete first* When a triple is deleted from one extractor and added from another extractor
+          destList += new SPARULDestination(false, policies) // delete triples
+          destList += new SPARULDestination(true, policies) // add triples
+        }
         destList += new JSONCacheUpdateDestination(liveCache)
         destList += new PublisherDiffDestination(cpage.id, policies)
         destList += new LoggerDestination(cpage.id, cpage.title.decoded) // Just to log extraction results

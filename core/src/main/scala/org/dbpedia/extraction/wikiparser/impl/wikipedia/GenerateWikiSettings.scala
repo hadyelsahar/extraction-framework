@@ -56,11 +56,16 @@ object GenerateWikiSettings {
     val disambiguationsMap = new LinkedHashMap[String, Set[String]]()
     
     // Note: langlist is sometimes not correctly sorted (done by hand), but no problem for us.
+    //
     // langlist was unavailable for several days in April 2013. Reported by Omri Oren:
     // https://github.com/dbpedia/extraction-framework/issues/37
     // It's back, thanks to Omri and Krinkle (Wikimedia). If it goes away again, we may use the copy in git:
     // https://gerrit.wikimedia.org/r/gitweb?p=operations/mediawiki-config.git;a=blob_plain;f=langlist
     // I don't really trust that long and ugly URL though, so I will leave the old URL for now. JC 2013-04-21
+    //
+    // TODO: use http://noc.wikimedia.org/conf/wikipedia.dblist instead? It doesn't contain the languages that
+    // are rdirected. Do we need them? Are there other differences between wikipedia.dblist and langlist?
+    //
     val source = Source.fromURL("http://noc.wikimedia.org/conf/langlist")(Codec.UTF8)
     val wikiLanguages = try source.getLines.toList finally source.close
     val languages = "mappings" :: "commons" :: "wikidata" :: wikiLanguages
@@ -147,7 +152,7 @@ object GenerateWikiSettings {
 
     var s = new StringPlusser
     for ((language, message) <- errors) s +"// "+language+" - "+message+"\n"
-    val errorStr = s toString
+    val errorStr = s.toString
     
     generate("Namespaces.scala", Map("namespaces" -> namespaceStr, "errors" -> errorStr))
     generate("Redirect.scala", Map("redirects" -> redirectStr, "errors" -> errorStr))
@@ -208,7 +213,7 @@ object GenerateWikiSettings {
     
     s +"\n"
     
-    s toString
+    s.toString
   }
   
 }

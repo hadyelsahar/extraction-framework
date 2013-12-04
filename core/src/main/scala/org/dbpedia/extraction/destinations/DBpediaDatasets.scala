@@ -47,7 +47,7 @@ object DBpediaDatasets
      */
     val InfoboxProperties = new Dataset("infobox_properties")
     val InfoboxPropertyDefinitions = new Dataset("infobox_property_definitions")
-    val TemplateVariables = new Dataset("template_parameters")
+    val TemplateParameters = new Dataset("template_parameters")
     val InfoboxTest = new Dataset("infobox_test")
 
     /**
@@ -64,7 +64,8 @@ object DBpediaDatasets
     val PageLinks = new Dataset("page_links")
     val DisambiguationLinks  = new Dataset("disambiguations")
     val Homepages = new Dataset("homepages")
-
+    
+    
 
     /**
      * Wikidata outputDatasets

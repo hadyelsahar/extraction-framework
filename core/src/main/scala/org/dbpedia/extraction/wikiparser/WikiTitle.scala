@@ -18,7 +18,13 @@ import scala.collection.mutable.ListBuffer
  * @param namespace Namespace used to be optional, but that leads to mistakes
  * @param language Language used to be optional, but that leads to mistakes
  */
-class WikiTitle (val decoded : String, val namespace : Namespace, val language : Language, val isInterLanguageLink : Boolean = false, val fragment : String = null)
+class WikiTitle (
+  val decoded: String,
+  val namespace: Namespace,
+  val language: Language,
+  val isInterLanguageLink: Boolean = false,
+  val fragment: String = null
+)
 {
     if (decoded.isEmpty) throw new WikiParserException("page name must not be empty")
 
@@ -41,7 +47,7 @@ class WikiTitle (val decoded : String, val namespace : Namespace, val language :
     {
       var ns = namespace.name(language)
       if (encode) ns = WikiUtil.wikiEncode(ns).capitalize(language.locale)
-      (if (ns isEmpty) ns else ns+':') + (if (encode) encoded else decoded)
+      (if (ns.isEmpty) ns else ns+':') + (if (encode) encoded else decoded)
     }
     
     /**
@@ -66,6 +72,19 @@ class WikiTitle (val decoded : String, val namespace : Namespace, val language :
      * TODO: also use fragment?
      */
     override def hashCode() = language.hashCode ^ decoded.hashCode ^ namespace.hashCode
+
+    /**
+     * If somehow a different namespace is also given for this title, store it here. Otherwise,
+     * this field is null.
+     * 
+     * Why do we need this nonsense? http://gd.wikipedia.org/?curid=4184 and http://gd.wikipedia.org/?curid=4185&redirect=no
+     * have the same title "Teamplaid:Gàidhlig", but they are in different namespaces: 4184 is in
+     * the template namespace, 4185 is in the main namespace. It looks like MediaWiki can handle this
+     * somehow, but when we try to import both pages from the XML dump file into the database,
+     * MySQL rightly complains about the duplicate title. As a workaround, we simply reject pages
+     * for which the <ns> namespace doesn't fit the <title> namespace. 
+     */
+    var otherNamespace: Namespace = null
 }
     
 object WikiTitle
@@ -83,7 +102,7 @@ object WikiTitle
      * @param link MediaWiki link e.g. "Template:Infobox Automobile"
      * @param sourceLanguage The source language of this link
      */
-    def parse(title : String, sourceLanguage : Language) =
+    def parse(title : String, sourceLanguage : Language): WikiTitle =
     {
         val coder = new HtmlCoder(XmlCodes.NONE)
         coder.setErrorHandler(ParseExceptionIgnorer.INSTANCE)

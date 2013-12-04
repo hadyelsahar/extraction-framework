@@ -9,6 +9,7 @@ import scala.collection.mutable.HashMap
  */
 class RdfNamespace(val prefix: String, val namespace: String, val validate: Boolean) {
   
+  // TODO: rename to '+'? Or add alias method '+'?
   def append(suffix: String): String =
   {
     val sb = new StringBuilder
@@ -61,6 +62,7 @@ object RdfNamespace {
   val SCHEMA = ns("schema", "http://schema.org/", false) 
   val BIBO = ns("bibo", "http://purl.org/ontology/bibo/", false)
   val WIKIDATA = ns("wikidata", "http://www.wikidata.org/entity/", false)
+  val MAPPINGS = ns("mappings", "http://mappings.dbpedia.org/wiki/", false)
   
   /**
    * @return namespace for prefix and suffix, default namespace and full name if no match found 

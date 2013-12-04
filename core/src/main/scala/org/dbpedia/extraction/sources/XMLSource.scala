@@ -5,7 +5,7 @@ import java.io.{File,FileInputStream,InputStreamReader}
 import scala.xml.Elem
 import org.dbpedia.extraction.util.Language
 import java.io.Reader
-import java.util.concurrent.{Executors, Callable}
+import java.util.concurrent.{ExecutorService, Executors, Callable}
 import scala.collection.JavaConversions._
 
 /**
@@ -47,7 +47,8 @@ object XMLSource
     }
 
     def fromReaders(sources: List[() => Reader], language: Language, filter: WikiTitle => Boolean = (_ => true)) : Source = {
-      new MultipleXMLReaderSource(sources, language, filter)
+      if (sources.size == 1) fromReader(sources.head, language, filter) // no need to create an ExecutorService
+      else new MultipleXMLReaderSource(sources, language, filter)
     }
 
     /**
@@ -70,9 +71,11 @@ object XMLSource
  */
 private class MultipleXMLReaderSource(sources: List[() => Reader], language: Language, filter: WikiTitle => Boolean) extends Source
 {
-  val executorService = Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors())
+  var executorService : ExecutorService = null
 
   override def foreach[U](proc : WikiPage => U) : Unit = {
+
+    if (executorService == null) executorService = Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors())
 
     try {
 
@@ -91,6 +94,7 @@ private class MultipleXMLReaderSource(sources: List[() => Reader], language: Lan
 
     } finally {
       executorService.shutdown()
+      executorService = null
     }
   }
 

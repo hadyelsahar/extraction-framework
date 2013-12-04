@@ -15,7 +15,9 @@ languages=de
 
 source=pages-articles.xml.bz2
 
-extractors=WiktionaryPageExtractor
+# extractor class names starting with "." are prefixed by "org.dbpedia.extraction.mappings"
+
+extractors=.WiktionaryPageExtractor
 
 parser=sweble
 

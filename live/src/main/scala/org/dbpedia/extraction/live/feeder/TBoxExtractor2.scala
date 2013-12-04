@@ -5,12 +5,11 @@ import org.apache.log4j.Logger
 import java.net.URI
 import com.hp.hpl.jena.rdf.model.{Resource, ResourceFactory, ModelFactory, Model}
 import org.dbpedia.extraction.sources.Source
-import org.dbpedia.extraction.wikiparser.{WikiParser, WikiTitle, PageNode}
+import org.dbpedia.extraction.wikiparser._
 import collection.mutable.MultiMap
 import com.hp.hpl.jena.shared.PrefixMapping
 import java.util.GregorianCalendar
 import com.hp.hpl.jena.vocabulary.DCTerms
-import org.dbpedia.extraction.wikiparser.Namespace
 import org.dbpedia.extraction.live.util.StringUtil
 
 /**
