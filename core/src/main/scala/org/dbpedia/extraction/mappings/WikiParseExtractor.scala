@@ -22,7 +22,7 @@ import org.dbpedia.extraction.wikiparser.impl.json.JsonWikiParser
  * @param mappings  Sequence of next level Extractors
  *
  * */
- class ParseExtractor(format : WikiPageFormat , mappings: Seq[Extractor[Any]])extends Extractor[WikiPage]{
+ class WikiParseExtractor(format : WikiPageFormat , mappings: Seq[Extractor[Any]])extends Extractor[WikiPage]{
 
   val Type = Extractor.WikiPageType
 

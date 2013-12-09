@@ -3,7 +3,7 @@ package org.dbpedia.extraction.mappings
 import org.dbpedia.extraction.ontology.Ontology
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
-import org.dbpedia.extraction.wikiparser.{JsonNode, WikidataInterWikiLinkNode, Namespace, PageNode}
+import org.dbpedia.extraction.wikiparser.{JsonNode, Namespace, PageNode}
 import collection.mutable.ArrayBuffer
 
 /**
