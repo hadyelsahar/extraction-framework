@@ -50,8 +50,7 @@ class AbstractExtractorTest
     {
         val page = new FileSource(testDataRootDir, Language.English, _ endsWith fileName).head
 
-      //return empty Abstract inscase that the parser Returned None
-      //todo : Fix it
+      //return empty Abstract in case that the parser Returned None
       parser(page) match {
         case Some(n) =>  val generatedAbstract = extractor.getAbstractWikiText(n)
                          extractor.retrievePage(page.title, generatedAbstract)
