@@ -135,7 +135,7 @@ private class Config(config: Properties)
   }
 
   private def loadExtractorClass(name: String): Class[_ <: Extractor[_]] = {
-    val className = if (! name.contains(".")) classOf[Extractor[Any]].getPackage.getName+"."+name else name
+    val className = if (name.startsWith(".")) classOf[Extractor[_]].getPackage.getName+name else name
     // TODO: class loader of Extractor.class is probably wrong for some users.
     classOf[Extractor[_]].getClassLoader.loadClass(className).asSubclass(classOf[Extractor[_]])
   }
