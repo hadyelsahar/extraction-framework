@@ -1,7 +1,7 @@
 package org.dbpedia.extraction.wikiparser.impl.json
 
 import org.dbpedia.extraction.sources.WikiPage
-import org.dbpedia.extraction.wikiparser.{WikidataInterWikiLinkNode, Node, PageNode, WikiTitle,JsonNode}
+import org.dbpedia.extraction.wikiparser.{Node, PageNode, WikiTitle,JsonNode}
 
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
@@ -32,15 +32,22 @@ class JsonWikiParser {
 
   implicit val formats = DefaultFormats
 
-  def apply(page : WikiPage) : JsonNode =
+  def apply(page : WikiPage) : Option[JsonNode] =
   {
-    var nodes = getLanguageLinks(page)
-    nodes = nodes ::: getLabels(page)
-    nodes = nodes ::: getFacts(page)
+    if (page.format != null && page.format.nonEmpty && page.format != "application/json")
+    {
+     return None
+    }
+    else
+    {
+      var nodes = getLanguageLinks(page)
+      nodes = nodes ::: getLabels(page)
+      nodes = nodes ::: getFacts(page)
 
-    // Return page node
-    //new PageNode(page.title, page.id, page.revision, page.timestamp, page.contributorID, page.contributorName, false, false, nodes)
-    new JsonNode(page,null,null,null,nodes)
+      // Return page node
+      //new PageNode(page.title, page.id, page.revision, page.timestamp, page.contributorID, page.contributorName, false, false, nodes)
+      Some(new JsonNode(page,null,null,null,nodes))
+    }
   }
 
 

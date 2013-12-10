@@ -67,13 +67,13 @@ class ConfigLoader(config: Config)
                 if (config.mappingsDir != null && config.mappingsDir.isDirectory)
                 {
                     val file = new File(config.mappingsDir, namespace.name(Language.Mappings).replace(' ','_')+".xml")
-                    XMLSource.fromFile(file, Language.Mappings).map(parser)
+                    XMLSource.fromFile(file, Language.Mappings).map(parser).flatten
                 }
                 else
                 {
                     val namespaces = Set(namespace)
                     val url = new URL(Language.Mappings.apiUri)
-                    WikiSource.fromNamespaces(namespaces,url,Language.Mappings).map(parser)
+                    WikiSource.fromNamespaces(namespaces,url,Language.Mappings).map(parser).flatten
                 }
             }
             

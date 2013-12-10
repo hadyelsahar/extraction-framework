@@ -22,7 +22,7 @@ private class Config(config: Properties)
   /** Dump directory */
   val dumpDir = getValue(config, "base-dir", true)(new File(_))
   if (! dumpDir.exists) throw error("dir "+dumpDir+" does not exist")
-  
+
   val requireComplete = config.getProperty("require-download-complete", "false").toBoolean
 
   // Watch out, this could be a regex
@@ -38,20 +38,20 @@ private class Config(config: Properties)
 
   /** Local mappings files, downloaded for speed and reproducibility */
   val mappingsDir = getValue(config, "mappings", false)(new File(_))
-  
+
   val formats = parseFormats(config, "uri-policy", "format")
 
   val extractorClasses = loadExtractorClasses()
-  
+
   val namespaces = loadNamespaces()
-  
+
   private def loadNamespaces(): Set[Namespace] = {
     val names = getStrings(config, "namespaces", ',', false)
     if (names.isEmpty) Set(Namespace.Main, Namespace.File, Namespace.Category, Namespace.Template)
     // Special case for namespace "Main" - its Wikipedia name is the empty string ""
     else names.map(name => if (name.toLowerCase(Language.English.locale) == "main") Namespace.Main else Namespace(Language.English, name)).toSet
   }
-  
+
   /**
    * Loads the extractors classes from the configuration.
    *
@@ -66,7 +66,7 @@ private class Config(config: Properties)
     //Create extractor map
     // type of Extractor would be 'any' because they are different types of extractors and not categorized yet
     val classes = new HashMap[Language, List[Class[_ <: Extractor[_]]]]()
-    
+
     /*
     TODO: maybe we should check in the first loop if property "extractors."+language.wikiCode
     exists and if it does, add its specific extractors. Better: refactor the whole config mess.
@@ -89,40 +89,40 @@ private class Config(config: Properties)
 
     SortedMap(classes.toSeq: _*)
   }
-  
+
   private def loadLanguages(): Set[Language] = {
-    
+
     /** Languages */
     // TODO: add special parameters, similar to download:
     // extract=10000-:InfoboxExtractor,PageIdExtractor means all languages with at least 10000 articles
     // extract=mapped:MappingExtractor means all languages with a mapping namespace
-    
+
     val keys = getStrings(config, "languages", ',', false)
-        
+
     var languages = Set[Language]()
-    
+
     var ranges = Set[(Int,Int)]()
-  
+
     // FIXME: copy & paste in DownloadConfig and ConfigUtils
-    
+
     for (key <- keys) key match {
       case "@mappings" => languages ++= Namespace.mappings.keySet
       case RangeRegex(from, to) => ranges += toRange(from, to)
       case LanguageRegex(language) => languages += Language(language)
       case other => throw new Exception("Invalid language / range '"+other+"'")
     }
-    
+
     // resolve page count ranges to languages
     if (ranges.nonEmpty)
     {
       val listFile = new File(dumpDir, WikiInfo.FileName)
-      
+
       // Note: the file is in ASCII, any non-ASCII chars are XML-encoded like '&#231;'. 
       // There is no Codec.ASCII, but UTF-8 also works for ASCII. Luckily we don't use 
       // these non-ASCII chars anyway, so we don't have to unescape them.
       println("parsing "+listFile)
       val wikis = WikiInfo.fromFile(listFile, Codec.UTF8)
-      
+
       // for all wikis in one of the desired ranges...
       for ((from, to) <- ranges; wiki <- wikis; if (from <= wiki.pages && wiki.pages <= to))
       {
@@ -130,18 +130,18 @@ private class Config(config: Properties)
         languages += wiki.language
       }
     }
-    
+
     SortedSet[Language](languages.toSeq: _*)
   }
 
   private def loadExtractorClass(name: String): Class[_ <: Extractor[_]] = {
-    val className = if (name.startsWith(".")) classOf[Extractor[_]].getPackage.getName+name else name
+    val className = if (! name.contains(".")) classOf[Extractor[Any]].getPackage.getName+"."+name else name
     // TODO: class loader of Extractor.class is probably wrong for some users.
     classOf[Extractor[_]].getClassLoader.loadClass(className).asSubclass(classOf[Extractor[_]])
   }
-  
+
   private def error(message: String, cause: Throwable = null): IllegalArgumentException = {
     new IllegalArgumentException(message, cause)
   }
-    
+
 }

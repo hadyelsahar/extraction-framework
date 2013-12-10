@@ -3,7 +3,7 @@ package org.dbpedia.extraction.mappings
 import org.dbpedia.extraction.destinations.Quad
 import org.dbpedia.extraction.wikiparser.PageNode
 import org.dbpedia.extraction.mappings.Extractor
-import org.dbpedia.extraction.sources.{WikiPageFormat, WikiPage}
+import org.dbpedia.extraction.sources.{WikiPage}
 
 class CompositeExtractor[T](extractors: Seq[Extractor[T]])
 extends CompositeMapping[T](extractors: _*)
@@ -45,10 +45,10 @@ object CompositeExtractor
       val wikipageCompositeExtractor = new CompositeExtractor[WikiPage](wikiPageExtractors)
 
       //create and load WikiParseExtractor here
-      val wikiParseExtractor = new ParseExtractor(WikiPageFormat.WikiText, pageNodeExtractors)
+      val wikiParseExtractor = new WikiParseExtractor(pageNodeExtractors)
 
       //create and load JsonParseExtractor here
-      val jsonParseExtractor = new ParseExtractor(WikiPageFormat.Json, jsonNodeExtractors)
+      val jsonParseExtractor = new JsonParseExtractor(jsonNodeExtractors)
 
       //collect ParseExtractors and CompositeExtractor
       val allExtractors = Seq[Extractor[WikiPage]](wikiParseExtractor,jsonParseExtractor) ++ wikiPageExtractors

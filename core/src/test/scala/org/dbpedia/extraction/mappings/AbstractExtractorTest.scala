@@ -49,8 +49,15 @@ class AbstractExtractorTest
     private def render(fileName : String) : String =
     {
         val page = new FileSource(testDataRootDir, Language.English, _ endsWith fileName).head
-        val generatedAbstract = extractor.getAbstractWikiText(parser(page))
-        extractor.retrievePage(page.title, generatedAbstract)
+
+      //return empty Abstract inscase that the parser Returned None
+      //todo : Fix it
+      parser(page) match {
+        case Some(n) =>  val generatedAbstract = extractor.getAbstractWikiText(n)
+                         extractor.retrievePage(page.title, generatedAbstract)
+        case None => ""
+      }
+
     }
 
     private def gold(fileName : String) : String =
