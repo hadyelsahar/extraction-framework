@@ -53,13 +53,15 @@ object CompositeExtractor
       val wikipageCompositeExtractor = new CompositeExtractor[WikiPage](wikiPageExtractors :_*)
 
       //create and load WikiParseExtractor here
-      val wikiParseExtractor = new WikiParseExtractor(pageNodeExtractors)
+      val compositePageNodeExtractors = new CompositePageNodeExtractor(pageNodeExtractors :_*)
+      val wikiParseExtractor = new WikiParseExtractor(compositePageNodeExtractors)
 
       //create and load JsonParseExtractor here
-      val jsonParseExtractor = new JsonParseExtractor(jsonNodeExtractors)
+      val compositeJsonNodeExtractors = new CompositeJsonNodeExtractor(jsonNodeExtractors :_*)
+      val jsonParseExtractor = new JsonParseExtractor(compositeJsonNodeExtractors)
 
       //collect ParseExtractors and CompositeExtractor
-      val allExtractors = Seq[Extractor[WikiPage]](wikiParseExtractor,jsonParseExtractor) ++ wikiPageExtractors
+      val allExtractors = Seq[Extractor[WikiPage]](wikiParseExtractor,jsonParseExtractor) ++ wikipageCompositeExtractor
 
       new CompositeExtractor[WikiPage](allExtractors :_*)
     }
