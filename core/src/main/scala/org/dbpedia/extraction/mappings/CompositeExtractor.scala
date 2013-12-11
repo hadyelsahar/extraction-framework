@@ -5,6 +5,8 @@ import org.dbpedia.extraction.destinations.Quad
 import org.dbpedia.extraction.wikiparser.PageNode
 import org.dbpedia.extraction.mappings.Extractor
 import org.dbpedia.extraction.sources.{WikiPage}
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
+
 /**
  * TODO: generic type may not be optimal.
  */
@@ -13,8 +15,16 @@ class CompositeExtractor[N](mappings: Extractor[N]*) extends Extractor[N]
   override val datasets: Set[Dataset] = mappings.flatMap(_.datasets).toSet
 
   override def extract(input: N, subjectUri: String, context: PageContext): Seq[Quad] = {
-    mappings.flatMap(_.extract(input, subjectUri, context))
-}
+    //mappings.flatMap(_.extract(input, subjectUri, context))
+
+//TODO Move WikiPArseExtractor code here
+//    val parser = new SimpleWikiParser()
+//    val node = parser(input)
+//    node match {
+//      case Some(n) =>  mappings.flatMap(_.extract(n, subjectUri, context))
+//      case None => Seq.empty
+//    }
+  }
 }
 
 
