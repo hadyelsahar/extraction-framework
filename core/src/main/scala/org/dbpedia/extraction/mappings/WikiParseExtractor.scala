@@ -19,9 +19,7 @@ import org.dbpedia.extraction.wikiparser.impl.json.JsonWikiParser
  * @param mappings  Sequence of next level Extractors
  *
  * */
- class WikiParseExtractor(mappings: Seq[Extractor[Any]])extends Extractor[WikiPage]{
-
-  val Type = Extractor.WikiPageType
+ class WikiParseExtractor(mappings: Seq[PageNodeExtractor])extends Extractor[WikiPage]{
 
   override val datasets: Set[Dataset] = mappings.flatMap(_.datasets).toSet
 

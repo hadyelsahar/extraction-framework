@@ -8,7 +8,7 @@ import org.dbpedia.extraction.sources.{WikiPage}
 /**
  * TODO: generic type may not be optimal.
  */
-class CompositeExtractor[N](mappings: Extractor[N] *) extends Extractor[N]
+class CompositeExtractor[N](mappings: Extractor[N]*) extends Extractor[N]
 {
   override val datasets: Set[Dataset] = mappings.flatMap(_.datasets).toSet
 
@@ -35,20 +35,22 @@ object CompositeExtractor
 
       //define different types of Extractors
       var wikiPageExtractors =Seq[Extractor[WikiPage]]()
-      var pageNodeExtractors =Seq[Extractor[Any]]()
-      var jsonNodeExtractors =Seq[Extractor[Any]]()
+      var pageNodeExtractors =Seq[PageNodeExtractor]()
+      var jsonNodeExtractors =Seq[JsonNodeExtractor]()
       //to do: add json extractors
 
+      //if extractor is not either PageNodeExtractor or JsonNodeExtractor so it accepts WikiPage as input
       extractors foreach { extractor =>
-        extractor.Type match {
-          case Extractor.WikiPageType =>  wikiPageExtractors  = wikiPageExtractors :+ extractor.asInstanceOf[Extractor[WikiPage]]           //select all extractors which take Wikipage to wrap them in a CompositeExtractor
-          case Extractor.PageNodeType =>  pageNodeExtractors  = pageNodeExtractors :+ extractor.asInstanceOf[Extractor[Any]]           //select all extractors which take PageNode to wrap them in WikiParseExtractor
-          case Extractor.JsonNodeType =>  jsonNodeExtractors  = jsonNodeExtractors :+ extractor.asInstanceOf[Extractor[Any]]
+        extractor match {
+
+          case _ :PageNodeExtractor =>  pageNodeExtractors  = pageNodeExtractors :+ extractor.asInstanceOf[PageNodeExtractor]           //select all extractors which take PageNode to wrap them in WikiParseExtractor
+          case _ :JsonNodeExtractor =>  jsonNodeExtractors  = jsonNodeExtractors :+ extractor.asInstanceOf[JsonNodeExtractor]
+          case _ => wikiPageExtractors  = wikiPageExtractors :+ extractor.asInstanceOf[Extractor[WikiPage]]           //select all extractors which take Wikipage to wrap them in a CompositeExtractor
           case _ =>
         }
       }
 
-      val wikipageCompositeExtractor = new CompositeExtractor[WikiPage](wikiPageExtractors)
+      val wikipageCompositeExtractor = new CompositeExtractor[WikiPage](wikiPageExtractors :_*)
 
       //create and load WikiParseExtractor here
       val wikiParseExtractor = new WikiParseExtractor(pageNodeExtractors)
@@ -59,7 +61,7 @@ object CompositeExtractor
       //collect ParseExtractors and CompositeExtractor
       val allExtractors = Seq[Extractor[WikiPage]](wikiParseExtractor,jsonParseExtractor) ++ wikiPageExtractors
 
-      new CompositeExtractor[WikiPage](allExtractors)
+      new CompositeExtractor[WikiPage](allExtractors :_*)
     }
 
     /**
@@ -70,19 +72,9 @@ object CompositeExtractor
      * @param classes List of extractor classes to be instantiated
      * @param context Any type of object that implements the required parameter methods for the extractors
      */
-    def load[T](classes: Seq[Class[_ <: Extractor[_]]], context: AnyRef): Extractor[T] =
+    def load(classes: Seq[Class[_ <: PageNodeExtractor]], context: AnyRef): PageNodeExtractor =
     {
       val extractors = classes.map(_.getConstructor(classOf[AnyRef]).newInstance(context))
-
-      val selectedExtractors : Seq[Extractor[T]] = Seq.empty
-
-      extractors foreach { extractor : Extractor[_] =>
-        extractor match {
-        case ex : Extractor[T] =>  selectedExtractors :+ ex
-        case _ =>
-        }
-      }
-
-      new CompositeExtractor[T](selectedExtractors: Seq[Extractor[T]])
-  }
+      new CompositePageNodeExtractor(extractors: _*)
+    }
 }

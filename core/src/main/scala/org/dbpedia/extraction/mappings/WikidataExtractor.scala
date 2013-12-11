@@ -3,7 +3,7 @@ package org.dbpedia.extraction.mappings
 import org.dbpedia.extraction.ontology.Ontology
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.extraction.destinations.{Quad, DBpediaDatasets}
-import org.dbpedia.extraction.wikiparser.{Namespace, PageNode}
+import org.dbpedia.extraction.wikiparser.{JsonNode, Namespace, PageNode}
 import collection.mutable.ArrayBuffer
 
 /**
@@ -16,9 +16,8 @@ class WikidataExtractor(
                            def language : Language
                          }
                          )
-  extends Extractor[PageNode]
+  extends JsonNodeExtractor
 {
-  val Type = Extractor.PageNodeType
   // Here we define all the ontology predicates we will use
   private val isPrimaryTopicOf = context.ontology.properties("foaf:isPrimaryTopicOf")
   private val primaryTopic = context.ontology.properties("foaf:primaryTopic")
@@ -29,14 +28,14 @@ class WikidataExtractor(
   // this is where we will store the output
   override val datasets = Set(DBpediaDatasets.Wikidata)
 
-  override def extract(page : PageNode, subjectUri : String, pageContext : PageContext): Seq[Quad] =
+  override def extract(page : JsonNode , subjectUri : String, pageContext : PageContext): Seq[Quad] =
   {
     // Filter the namespace we want to parse
-    if(page.title.namespace != Namespace.Main) return Seq.empty
+    //if(page.title.namespace != Namespace.Main) return Seq.empty
 
     // This is the JSON we want to parse.
     // May contain JSON escaped characters like \u042F
-    val json = page.toWikiText
+    //val json = page.toWikiText
 
     // We now need to parse the json content. This is a sample of what can be found
     // http://pastebin.com/zygpzhJK
