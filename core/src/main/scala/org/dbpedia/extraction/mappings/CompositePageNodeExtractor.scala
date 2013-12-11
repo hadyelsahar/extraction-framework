@@ -1,11 +1,16 @@
 package org.dbpedia.extraction.mappings
 
 import org.dbpedia.extraction.destinations.Quad
-import org.dbpedia.extraction.wikiparser.PageNode
+import org.dbpedia.extraction.wikiparser.{JsonNode, PageNode}
 
 class CompositePageNodeExtractor(extractors: Extractor[PageNode]*)
 extends CompositeExtractor[PageNode](extractors: _*)
 with PageNodeExtractor
+{
+  override def extract(input: PageNode, subjectUri: String, context: PageContext): Seq[Quad] = {
+    extractors.flatMap(_.extract(input, subjectUri, context))
+  }
+}
 
 /**
  * Creates new extractors.
