@@ -18,9 +18,8 @@ class SkosCategoriesExtractor(
     def language : Language
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
   private val rdfTypeProperty = context.ontology.properties("rdf:type")
   private val skosConceptClass = context.ontology.classes("skos:Concept")
   private val skosPrefLabelProperty = context.ontology.properties("skos:prefLabel")

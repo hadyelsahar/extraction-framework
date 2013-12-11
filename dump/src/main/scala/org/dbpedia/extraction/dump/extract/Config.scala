@@ -1,7 +1,7 @@
 package org.dbpedia.extraction.dump.extract
 
 import org.dbpedia.extraction.destinations.formatters.UriPolicy.parseFormats
-import org.dbpedia.extraction.mappings.Extractor
+import org.dbpedia.extraction.mappings.PageNodeExtractor
 import scala.collection.mutable.HashMap
 import java.util.Properties
 import java.io.File

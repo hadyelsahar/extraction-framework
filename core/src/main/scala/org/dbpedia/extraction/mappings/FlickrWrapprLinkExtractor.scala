@@ -18,10 +18,8 @@ class FlickrWrapprLinkExtractor (
     def language : Language
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
-
   private val language = context.language
   
   require (language == Language.English, getClass.getSimpleName+" can only be used for language "+Language.English.wikiCode)

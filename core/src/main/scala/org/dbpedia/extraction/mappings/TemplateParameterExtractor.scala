@@ -16,9 +16,8 @@ class TemplateParameterExtractor(
     def language : Language 
   } 
 ) 
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
   private val templateParameterProperty = context.language.propertyUri.append("templateUsesParameter")
 
   val parameterRegex = """(?s)\{\{\{([^|}{<>]*)[|}<>]""".r

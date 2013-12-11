@@ -17,10 +17,8 @@ class ExternalLinksExtractor (
     def language : Language
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
-
   val wikiPageExternalLinkProperty = context.ontology.properties("wikiPageExternalLink")
 
   override val datasets = Set(DBpediaDatasets.ExternalLinks)

@@ -15,10 +15,8 @@ class MappingExtractor(
     def redirects : Redirects
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
-
   private val templateMappings = context.mappings.templateMappings
   private val tableMappings = context.mappings.tableMappings
 

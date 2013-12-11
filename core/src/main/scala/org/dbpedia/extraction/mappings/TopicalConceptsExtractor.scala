@@ -24,9 +24,8 @@ class TopicalConceptsExtractor(
     def language : Language
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
     private val skosSubjectProperty = context.ontology.properties("skos:subject")
 
     private val rdfTypeProperty = context.ontology.properties("rdf:type")

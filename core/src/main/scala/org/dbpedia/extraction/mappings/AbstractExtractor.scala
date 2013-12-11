@@ -25,9 +25,8 @@ class AbstractExtractor(
     def language : Language
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
     private val maxRetries = 3
 
     /** timeout for connection to web server, milliseconds */

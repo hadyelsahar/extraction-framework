@@ -16,9 +16,8 @@ class RevisionUriExtractor (
     def language: Language
   }
 )
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
   private val derivedFromProperty = "http://www.w3.org/ns/prov#wasDerivedFrom"
 
   override val datasets = Set(DBpediaDatasets.RevisionUris)

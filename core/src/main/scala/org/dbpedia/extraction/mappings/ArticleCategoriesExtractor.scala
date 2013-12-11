@@ -12,11 +12,8 @@ import scala.language.reflectiveCalls
  */
 class ArticleCategoriesExtractor( context : {
                                       def ontology : Ontology
-                                      def language : Language } ) extends Extractor[PageNode]
+                                      def language : Language } ) extends PageNodeExtractor
 {
-
-    val Type = Extractor.PageNodeType
-
     private val dctermsSubjectProperty = context.ontology.properties("dct:subject")
 
     override val datasets = Set(DBpediaDatasets.ArticleCategories)

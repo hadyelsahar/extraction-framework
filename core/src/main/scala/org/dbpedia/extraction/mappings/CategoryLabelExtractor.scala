@@ -12,11 +12,8 @@ import scala.language.reflectiveCalls
  */
 class CategoryLabelExtractor( context : {
                                   def ontology : Ontology
-                                  def language : Language } ) extends Extractor[PageNode]
+                                  def language : Language } ) extends PageNodeExtractor
 {
-
-    val Type = Extractor.PageNodeType
-
     private val labelProperty = context.ontology.properties("rdfs:label")
     
     private val quad = QuadBuilder(context.language, DBpediaDatasets.CategoryLabels, labelProperty, new Datatype("xsd:string")) _

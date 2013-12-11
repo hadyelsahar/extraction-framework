@@ -15,9 +15,8 @@ class LabelExtractor(
     def language : Language 
   } 
 ) 
-extends Extractor[PageNode]
+extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
   val labelProperty = context.ontology.properties("rdfs:label")
   
   override val datasets = Set(DBpediaDatasets.Labels)

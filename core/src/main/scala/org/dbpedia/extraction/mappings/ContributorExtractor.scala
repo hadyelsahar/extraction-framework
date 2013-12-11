@@ -17,9 +17,8 @@ import scala.language.reflectiveCalls
 
 class ContributorExtractor( context : {
   def ontology : Ontology
-  def language : Language } ) extends Extractor[PageNode]
+  def language : Language } ) extends PageNodeExtractor
 {
-  val Type = Extractor.PageNodeType
 
   override val datasets = Set(DBpediaDatasets.RevisionMeta)
 

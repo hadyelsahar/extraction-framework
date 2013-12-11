@@ -1,16 +1,22 @@
 package org.dbpedia.extraction.mappings
 
+import org.dbpedia.extraction.destinations.{Dataset,Quad}
 import org.dbpedia.extraction.destinations.Quad
 import org.dbpedia.extraction.wikiparser.PageNode
 import org.dbpedia.extraction.mappings.Extractor
 import org.dbpedia.extraction.sources.{WikiPage}
-
-class CompositeExtractor[T](extractors: Seq[Extractor[T]])
-extends CompositeMapping[T](extractors: _*)
-with Extractor[T]
+/**
+ * TODO: generic type may not be optimal.
+ */
+class CompositeExtractor[N](mappings: Extractor[N] *) extends Extractor[N]
 {
-  val Type = Extractor.Any
+  override val datasets: Set[Dataset] = mappings.flatMap(_.datasets).toSet
+
+  override def extract(input: N, subjectUri: String, context: PageContext): Seq[Quad] = {
+    mappings.flatMap(_.extract(input, subjectUri, context))
 }
+}
+
 
 /**
  * Creates new extractors.
@@ -78,5 +84,5 @@ object CompositeExtractor
       }
 
       new CompositeExtractor[T](selectedExtractors: Seq[Extractor[T]])
-    }
+  }
 }
